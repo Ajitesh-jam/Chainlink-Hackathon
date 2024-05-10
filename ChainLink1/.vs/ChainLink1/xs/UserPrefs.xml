@@ -1,7 +1,10 @@
 ﻿<Properties StartupConfiguration="{8E037765-310D-A50C-2B69-B9454C3CB835}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/JavascriptCaller.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="WebGLBuild/index.html">
     <Files>
       <File FileName="Assets/Scripts/JavascriptCaller.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/NewFile.txt" Line="1" Column="7" />
+      <File FileName="Assets/Scripts/control.cs" Line="32" Column="10" />
+      <File FileName="WebGLBuild/index.html" Line="1" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -9,7 +12,7 @@
           <Node name="ChainLink1" expanded="True">
             <Node name="Assets" expanded="True">
               <Node name="Scripts" expanded="True">
-                <Node name="JavascriptCaller.cs" selected="True" />
+                <Node name="control.cs" selected="True" />
               </Node>
             </Node>
           </Node>

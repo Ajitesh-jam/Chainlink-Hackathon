@@ -1,0 +1,9 @@
+<linker>
+	<assembly fullname="Assembly-CSharp" ignoreIfMissing="1">
+		<type fullname="NewBehaviourScript">
+			<method name="StringFromJs"/>
+			<method name="UnityCallJSFunc"/>
+			<method name="UnityCallJSFuncWithParam"/>
+		</type>
+	</assembly>
+</linker>
