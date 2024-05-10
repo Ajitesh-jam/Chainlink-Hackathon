@@ -12,6 +12,10 @@
 
 
 
+extern void ChangeFromJavascript_Start_mC086B7BFC84FF19947950608E6D9D2A7D91212BD (void);
+extern void ChangeFromJavascript_Update_m2EAB3E2016642598690D10073BFE012721047E25 (void);
+extern void ChangeFromJavascript_CallFromJava_mAAB15C0F36F9071E1FD53ACA2004DA4B832423D3 (void);
+extern void ChangeFromJavascript__ctor_m7CFBB1056E744F71E5082714152D872A2D4369A6 (void);
 extern void control_Start_mB36D817C416BD8A8BD48CEAA305437912816D306 (void);
 extern void control_Update_m4B4FB1964CEC8189D7319C2EE7505119AB48E518 (void);
 extern void control_ctrl_m6E9EC1EEA5FFC7FECFD07A767E0182FD7F6E7A26 (void);
@@ -294,8 +298,12 @@ extern void U3CWarpTextU3Ed__8_MoveNext_mCE7A826C5E4854C2C509C77BD18F5A9B6D691B0
 extern void U3CWarpTextU3Ed__8_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mD80368E9B7E259311C03E406B75161ED6F7618E3 (void);
 extern void U3CWarpTextU3Ed__8_System_Collections_IEnumerator_Reset_m07746C332D2D8CE5DEA59873C26F2FAD4B369B42 (void);
 extern void U3CWarpTextU3Ed__8_System_Collections_IEnumerator_get_Current_m71D7F84D9DEF63BEC6B44866515DDCF35B142A19 (void);
-static Il2CppMethodPointer s_methodPointers[282] = 
+static Il2CppMethodPointer s_methodPointers[286] = 
 {
+	ChangeFromJavascript_Start_mC086B7BFC84FF19947950608E6D9D2A7D91212BD,
+	ChangeFromJavascript_Update_m2EAB3E2016642598690D10073BFE012721047E25,
+	ChangeFromJavascript_CallFromJava_mAAB15C0F36F9071E1FD53ACA2004DA4B832423D3,
+	ChangeFromJavascript__ctor_m7CFBB1056E744F71E5082714152D872A2D4369A6,
 	control_Start_mB36D817C416BD8A8BD48CEAA305437912816D306,
 	control_Update_m4B4FB1964CEC8189D7319C2EE7505119AB48E518,
 	control_ctrl_m6E9EC1EEA5FFC7FECFD07A767E0182FD7F6E7A26,
@@ -579,8 +587,12 @@ static Il2CppMethodPointer s_methodPointers[282] =
 	U3CWarpTextU3Ed__8_System_Collections_IEnumerator_Reset_m07746C332D2D8CE5DEA59873C26F2FAD4B369B42,
 	U3CWarpTextU3Ed__8_System_Collections_IEnumerator_get_Current_m71D7F84D9DEF63BEC6B44866515DDCF35B142A19,
 };
-static const int32_t s_InvokerIndices[282] = 
+static const int32_t s_InvokerIndices[286] = 
 {
+	4443,
+	4443,
+	3552,
+	4443,
 	4443,
 	4443,
 	3577,
@@ -868,7 +880,7 @@ IL2CPP_EXTERN_C const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule;
 const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule = 
 {
 	"Assembly-CSharp.dll",
-	282,
+	286,
 	s_methodPointers,
 	0,
 	NULL,

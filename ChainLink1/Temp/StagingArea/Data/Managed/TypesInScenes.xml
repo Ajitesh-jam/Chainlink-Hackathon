@@ -1,5 +1,6 @@
 <linker>
 	<assembly fullname="Assembly-CSharp">
+		<type fullname="ChangeFromJavascript" preserve="nothing"/>
 		<type fullname="control" preserve="nothing"/>
 		<type fullname="NewBehaviourScript" preserve="nothing"/>
 	</assembly>

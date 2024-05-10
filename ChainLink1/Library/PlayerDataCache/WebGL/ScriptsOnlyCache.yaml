@@ -1,6 +1,7 @@
 ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
+    - ChangeFromJavascript
     - NewBehaviourScript
     - control
     Unity.Rider.Editor.dll:
@@ -130,6 +131,8 @@ ScriptsOnlyBuild:
       Script: {instanceID: 24436}
     - Class: 114
       Script: {instanceID: 24466}
+    - Class: 114
+      Script: {instanceID: 29010}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -1189,6 +1192,12 @@ ScriptsOnlyBuild:
     assemblyName: Assembly-CSharp
     namespaceName: TMPro.Examples
     className: TMP_ExampleScript_01
+  - hash:
+      serializedVersion: 2
+      Hash: 023c528b508ba96f1176312967e6be83
+    assemblyName: Assembly-CSharp
+    namespaceName: 
+    className: ChangeFromJavascript
   platform: 20
   scenePathNames:
   - Assets/Scenes/SampleScene.unity

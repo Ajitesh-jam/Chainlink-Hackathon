@@ -24,7 +24,7 @@
       </div>
     </div>
       <div id="main" style={float:'right'}>
-          <select onchange="f1(this.value)">
+          <select id="selectOption">
             <option value="1">sphere</option>
             <option value="2">cube</option>
             <option value="3">cap</option>
@@ -117,13 +117,29 @@
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           progressBarFull.style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
+        }).then((unityInstance) => {
+
+
+            //yeh chij se trigger hoga
+
+            // Function to call Unity function from JavaScript
+            window.f1 = function (value) {
+                unityInstance.SendMessage("Main Camera", "ctrl", value);
+            };
+
+            // Event listener for select option change
+            document.getElementById("selectOption").addEventListener("change", function () {
+                f1(this.value);
+            });
+
+
+
+
+            <!--unityInstance.SendMessage("Capsule", "CallFromJava", 1);-->
                 loadingBar.style.display = "none";
                 fullscreenButton.onclick = () => {
                     unityInstance.SetFullscreen(1);
-                    function f1(value) {
-                        unityInstance.sendMessage("Main Camera", "ctrl", value);
-                    }
+
                 };
               }).catch((message) => {
                 alert(message);
