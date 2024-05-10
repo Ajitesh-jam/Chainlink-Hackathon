@@ -1,11 +1,12 @@
 ﻿<Properties StartupConfiguration="{8E037765-310D-A50C-2B69-B9454C3CB835}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/ChangeFromJavascript.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="WebGLBuild/index.html">
     <Files>
       <File FileName="Assets/Scripts/JavascriptCaller.cs" Line="111" Column="6" />
       <File FileName="Assets/Scripts/NewFile.txt" Line="11" Column="5" />
       <File FileName="Assets/Scripts/control.cs" Line="35" Column="31" />
-      <File FileName="WebGLBuild/index.html" Line="131" Column="15" />
-      <File FileName="Assets/Scripts/ChangeFromJavascript.cs" Line="18" Column="12" />
+      <File FileName="WebGLBuild/index.html" Line="34" Column="16" />
+      <File FileName="Assets/Scripts/ChangeFromJavascript.cs" Line="26" Column="1" />
+      <File FileName="Assets/Scripts/BuyScript.cs" Line="14" Column="30" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -13,7 +14,7 @@
           <Node name="ChainLink1" expanded="True">
             <Node name="Assets" expanded="True">
               <Node name="Scripts" expanded="True">
-                <Node name="ChangeFromJavascript.cs" selected="True" />
+                <Node name="BuyScript.cs" selected="True" />
               </Node>
             </Node>
           </Node>
