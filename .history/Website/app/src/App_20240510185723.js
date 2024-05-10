@@ -37,27 +37,22 @@ function App() {
     return `${address.slice(0, startLength)}...${address.slice(-endLength)}`;
   }
   async function Buy() {
-    console.log("theek1");
-    const contract = await new web3.eth.Contract(contractABI, contractAddress);
-    console.log("theek2");
-    // const amountInWei = web3.utils.toWei("100"); // Amount to send in wei
-    console.log("theek3");
-    // const gasPrice = await web3.eth.getGasPrice(); // Get current gas price
-    console.log("theek4");
-    console.log("Account : ", connectedAccount);
+    const contract = new web3.eth.Contract(contractABI, contractAddress);
+    const amountInWei = web3.utils.toWei("1000"); // Amount to send in wei
+    const gas = await contract.methods.receive().estimateGas(); // Estimate gas required
+    const gasPrice = await web3.eth.getGasPrice(); // Get current gas price
 
     // Send transaction to the contract's address with ether attached
-    await contract.methods
-      .owner()
-      .send({
+    await web3.eth
+      .sendTransaction({
         from: connectedAccount,
-        value: "100000000000",
-        gasPrice: "10000000",
-        data: "",
+        to: contractAddress,
+        value: amountInWei,
+        gas: gas,
+        gasPrice: gasPrice,
       })
       .on("receipt", (receipt) => {
         console.log("Transaction receipt:", receipt);
-        console.log("Transaction hash:", receipt.transactionHash);
       })
       .on("error", (error) => {
         console.error("Transaction error:", error);
@@ -91,11 +86,10 @@ function App() {
           </div>
         )}
       </div>
-      <br></br>
+      <br>
+        <br></br>
+      </br>
       <button onClick={getContractAddresses}>Get Details</button>
-
-      <br></br>
-      <button onClick={Buy}>Buy</button>
     </>
   );
 }

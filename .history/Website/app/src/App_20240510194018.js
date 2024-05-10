@@ -42,7 +42,7 @@ function App() {
     console.log("theek2");
     // const amountInWei = web3.utils.toWei("100"); // Amount to send in wei
     console.log("theek3");
-    // const gasPrice = await web3.eth.getGasPrice(); // Get current gas price
+    const gasPrice = await web3.eth.getGasPrice(); // Get current gas price
     console.log("theek4");
     console.log("Account : ", connectedAccount);
 

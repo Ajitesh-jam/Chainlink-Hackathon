@@ -42,22 +42,20 @@ function App() {
     console.log("theek2");
     // const amountInWei = web3.utils.toWei("100"); // Amount to send in wei
     console.log("theek3");
-    // const gasPrice = await web3.eth.getGasPrice(); // Get current gas price
+    const gasPrice = await web3.eth.getGasPrice(); // Get current gas price
     console.log("theek4");
-    console.log("Account : ", connectedAccount);
 
     // Send transaction to the contract's address with ether attached
     await contract.methods
       .owner()
       .send({
         from: connectedAccount,
-        value: "100000000000",
-        gasPrice: "10000000",
+        value: "1000",
+        gasPrice: gasPrice,
         data: "",
       })
       .on("receipt", (receipt) => {
         console.log("Transaction receipt:", receipt);
-        console.log("Transaction hash:", receipt.transactionHash);
       })
       .on("error", (error) => {
         console.error("Transaction error:", error);
