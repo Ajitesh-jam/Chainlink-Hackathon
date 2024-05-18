@@ -1,0 +1,48 @@
+const express = require("express");
+const mongoose = require("mongoose");
+const skinSeller = require("./model/skinSeller.js");
+
+const app = express();
+
+app.get("/Ajitesh/Buy/:id", async (req, res) => {
+  try {
+    const skinId = req.params.id;
+
+    // Find the skin with the given skinId
+    const skin = await skinSeller.findOne({ skinId: skinId });
+
+    if (!skin) {
+      return res.status(404).json({ message: "Skin not found" });
+    }
+
+    // Return the username and price of the skin
+    res.json({ userName: skin.userName, price: skin.price });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message });
+  }
+});
+//sell skin by a user
+app.post("/Ajitesh/", async (req, res) => {
+  const { Name, Password } = req.body;
+  const user = await User.findOne({ Name });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  console.log(user.Password, Password);
+  // const isPasswordCorrect = await user.comparePassword(Password);
+
+  if (user.Password === Password) {
+    // Passwords match
+    return res.status(200).json({ status: "correct Password", id: user.id });
+  } else {
+    // Passwords do not match
+    return res.status(400).json({ status: "incorrect Password" });
+  }
+});
+
+// Start the server
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

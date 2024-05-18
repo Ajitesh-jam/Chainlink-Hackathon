@@ -1,0 +1,9 @@
+thirdweb
+npx thirdweb create contarct //check
+npx thirdweb deploy
+npm i react-router-dom
+web3
+npm install react-bootstrap bootstrap
+npm i express mongoose http cors
+npm i axios
+npm i react-bootstrap

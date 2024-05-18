@@ -1,0 +1,64 @@
+const express = require("express");
+const mongoose = require("mongoose");
+const skinSeller = require("./model/skinSeller.js");
+const cors = require("cors");
+
+const app = express();
+app.use(cors());
+// MongoDB Connection
+mongoose
+  .connect(
+    "mongodb+srv://Ajitesh:Ajitesh9877@cluster0.yz6u5fv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+  )
+  .then(() => {
+    console.log("MongoDB Connected");
+  })
+  .catch((err) => {
+    console.error("MongoDB Connection Error:", err);
+  });
+
+app.get("/Ajitesh/Buy/:id", async (req, res) => {
+  try {
+    const skinId = req.params.id;
+
+    console.log("Get Request with skin id - ", skinId);
+
+    // Find the skin with the given skinId
+    const skin = await skinSeller.findOne({ skinId: skinId });
+
+    if (!skin) {
+      return res.status(404).json({ message: "Skin not found" });
+    }
+
+    // Return the username and price of the skin
+    res.json({ userName: skin.userName, price: skin.price });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message });
+  }
+});
+//sell skin by a user
+app.post("/:userName/:id", async (req, res) => {
+  const skinId = req.params.id;
+  const userName = req.params.userName;
+  console.log("Post Request with userName - ", userName, " skin id - ", skinId);
+  console.log(req.body);
+
+  try {
+    const newSkinSeller = await skinSeller.create({
+      userName,
+      skinId,
+      price: req.body.price, // Corrected line
+    });
+    res.status(201).json(newSkinSeller);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// Start the server
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
