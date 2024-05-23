@@ -85,3 +85,144 @@ contract SkinOwnership {
         return skinOwners[_username].skinIds;
     }
 }
+
+// contarct address on Ganache=0x346225D1E259c9802DDDd558Cef69C6c9d5983D8
+// abi-
+// [
+// 	{
+// 		"inputs": [],
+// 		"stateMutability": "nonpayable",
+// 		"type": "constructor"
+// 	},
+// 	{
+// 		"inputs": [
+// 			{
+// 				"internalType": "string",
+// 				"name": "_username",
+// 				"type": "string"
+// 			},
+// 			{
+// 				"internalType": "uint256",
+// 				"name": "_skinId",
+// 				"type": "uint256"
+// 			}
+// 		],
+// 		"name": "addSkinToUser",
+// 		"outputs": [],
+// 		"stateMutability": "nonpayable",
+// 		"type": "function"
+// 	},
+// 	{
+// 		"inputs": [
+// 			{
+// 				"internalType": "string",
+// 				"name": "_username",
+// 				"type": "string"
+// 			}
+// 		],
+// 		"name": "deleteUser",
+// 		"outputs": [],
+// 		"stateMutability": "nonpayable",
+// 		"type": "function"
+// 	},
+// 	{
+// 		"inputs": [
+// 			{
+// 				"internalType": "string",
+// 				"name": "_userName",
+// 				"type": "string"
+// 			}
+// 		],
+// 		"name": "getUser",
+// 		"outputs": [
+// 			{
+// 				"components": [
+// 					{
+// 						"internalType": "string",
+// 						"name": "username",
+// 						"type": "string"
+// 					},
+// 					{
+// 						"internalType": "uint256[]",
+// 						"name": "skinIds",
+// 						"type": "uint256[]"
+// 					}
+// 				],
+// 				"internalType": "struct SkinOwnership.skinOwner",
+// 				"name": "",
+// 				"type": "tuple"
+// 			}
+// 		],
+// 		"stateMutability": "nonpayable",
+// 		"type": "function"
+// 	},
+// 	{
+// 		"inputs": [
+// 			{
+// 				"internalType": "string",
+// 				"name": "_username",
+// 				"type": "string"
+// 			}
+// 		],
+// 		"name": "getUserSkins",
+// 		"outputs": [
+// 			{
+// 				"internalType": "uint256[]",
+// 				"name": "",
+// 				"type": "uint256[]"
+// 			}
+// 		],
+// 		"stateMutability": "view",
+// 		"type": "function"
+// 	},
+// 	{
+// 		"inputs": [],
+// 		"name": "owner",
+// 		"outputs": [
+// 			{
+// 				"internalType": "address",
+// 				"name": "",
+// 				"type": "address"
+// 			}
+// 		],
+// 		"stateMutability": "view",
+// 		"type": "function"
+// 	},
+// 	{
+// 		"inputs": [
+// 			{
+// 				"internalType": "string",
+// 				"name": "_username",
+// 				"type": "string"
+// 			},
+// 			{
+// 				"internalType": "uint256",
+// 				"name": "_skinId",
+// 				"type": "uint256"
+// 			}
+// 		],
+// 		"name": "removeSkinFromUser",
+// 		"outputs": [],
+// 		"stateMutability": "nonpayable",
+// 		"type": "function"
+// 	},
+// 	{
+// 		"inputs": [
+// 			{
+// 				"internalType": "string",
+// 				"name": "",
+// 				"type": "string"
+// 			}
+// 		],
+// 		"name": "skinOwners",
+// 		"outputs": [
+// 			{
+// 				"internalType": "string",
+// 				"name": "username",
+// 				"type": "string"
+// 			}
+// 		],
+// 		"stateMutability": "view",
+// 		"type": "function"
+// 	}
+// ]
