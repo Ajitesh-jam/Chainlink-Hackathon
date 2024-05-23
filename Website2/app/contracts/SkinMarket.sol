@@ -132,7 +132,7 @@ contract SkinMarket {
 
         // Update SkinOwner struct to add the bought skin
         skinOwnership.addSkinToUser(
-            skinOwnership.getUser(userName).username, //yaha pe get user kyuki agar nhi exists karta toh user bana ke add karo
+            skinOwnership.getUser(userName).username,
             skinId
         );
 
