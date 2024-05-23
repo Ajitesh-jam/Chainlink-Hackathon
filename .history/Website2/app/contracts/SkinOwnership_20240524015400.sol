@@ -20,17 +20,17 @@ contract SkinOwnership {
     ) external view returns (skinOwner memory) {
         return skinOwners[_userName];
     }
+    function createUser(string memory _userName)external returns (skinOwner memory)  {
+                
+            // If the user does not exist, create a new skinOwner struct and store it
+            uint256[] memory dynamicArray;
+            skinOwners[_userName] = skinOwner({
+                username: _userName,
+                skinIds: dynamicArray // Empty array of skin IDs
+            });
+            return skinOwners[_userName];
+        
 
-    function createUser(
-        string memory _userName
-    ) external returns (skinOwner memory) {
-        // If the user does not exist, create a new skinOwner struct and store it
-        uint256[] memory dynamicArray;
-        skinOwners[_userName] = skinOwner({
-            username: _userName,
-            skinIds: dynamicArray // Empty array of skin IDs
-        });
-        return skinOwners[_userName];
     }
 
     function deleteUser(string memory _username) external {
@@ -90,4 +90,6 @@ contract SkinOwnership {
     }
 }
 
-// contract address: 0xD6f74Ca0b307e0bacf9Ecf513555f2067B351920
+
+
+contract address: 

@@ -23,10 +23,6 @@ interface ISkinOwnership {
     function getUserSkins(
         string memory _username
     ) external view returns (uint256[] memory);
-
-    function createUser(
-        string memory _userName
-    ) external returns (skinOwner memory);
 }
 
 contract SkinMarket {
@@ -64,31 +60,16 @@ contract SkinMarket {
         //plus koi nai skin add karney ke liye
         game.transfer(gameSkinPrices[_skinId]);
         // Update SkinOwner struct to add the bought skin
-
-        if (bytes(skinOwnership.getUser(_userName).username).length > 0) {
-            skinOwnership.addSkinToUser(
-                skinOwnership.getUser(_userName).username, //yaha pe get user kyuki agar nhi exists karta toh user bana ke add karo
-                _skinId
-            );
-        } else {
-            skinOwnership.addSkinToUser(
-                skinOwnership.createUser(_userName).username, //yaha pe get user kyuki agar nhi exists karta toh user bana ke add karo
-                _skinId
-            );
-        }
+        skinOwnership.addSkinToUser(
+            skinOwnership.getUser(_userName).username, //yaha pe get user kyuki agar nhi exists karta toh user bana ke add karo
+            _skinId
+        );
     }
 
     constructor(address _skinOwnershipAddress, address payable _game) {
         owner = payable(msg.sender);
         skinOwnership = ISkinOwnership(_skinOwnershipAddress);
         game = _game;
-
-        //initial data
-        gameSkinPrices[1] = 10000000000;
-        gameSkinPrices[2] = 10000000000;
-        gameSkinPrices[3] = 10000000000;
-        gameSkinPrices[4] = 10000000000;
-        gameSkinPrices[5] = 10000000000;
     }
 
     function getSellers(
@@ -150,17 +131,10 @@ contract SkinMarket {
         }
 
         // Update SkinOwner struct to add the bought skin
-        if (bytes(skinOwnership.getUser(userName).username).length > 0) {
-            skinOwnership.addSkinToUser(
-                skinOwnership.getUser(userName).username, //yaha pe get user kyuki agar nhi exists karta toh user bana ke add karo
-                skinId
-            );
-        } else {
-            skinOwnership.addSkinToUser(
-                skinOwnership.createUser(userName).username,
-                skinId
-            );
-        }
+        skinOwnership.addSkinToUser(
+            skinOwnership.getUser(userName).username,
+            skinId
+        );
 
         return true;
     }
@@ -186,4 +160,6 @@ contract SkinMarket {
     }
 }
 
-// contract address: 0x88722eEDA8FBBcE2D59cFde14C1cB8A4410DD1aE
+
+
+contract address: 
