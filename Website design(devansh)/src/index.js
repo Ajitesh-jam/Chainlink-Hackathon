@@ -20,8 +20,8 @@ let a= [1,2,3,"Midnightcity ",5]
 root.render(
   <>
 
-   <ClassComponent />
-   <hr />
+  
+   
    <App />
 
   </>

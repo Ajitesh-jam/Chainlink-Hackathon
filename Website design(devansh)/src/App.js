@@ -5,13 +5,15 @@ import Header from './Header.js';
 import Main from './Main.js';
 import TopNav from './TopNav.js';
 import Buy from './Buy.js';
+import Dropdown from './Dropdown';
 
 
 function App(){
   return (
     <div className='App'>
     
-    <Header />
+      <Header />
+      <Dropdown/>
       <TopNav />
       <Main />
       <Buy/>
