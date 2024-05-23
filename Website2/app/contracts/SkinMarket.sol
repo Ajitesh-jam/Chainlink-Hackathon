@@ -30,8 +30,7 @@ interface ISkinOwnership {
 }
 
 contract SkinMarket {
-    address payable public owner;
-    address payable public game;
+    address public owner;
     ISkinOwnership public skinOwnership;
 
     struct skinSeller {
@@ -80,8 +79,10 @@ contract SkinMarket {
 
     constructor(address _skinOwnershipAddress, address payable _game) {
         owner = payable(msg.sender);
+
+    constructor(address _skinOwnershipAddress) {
+        owner = msg.sender;
         skinOwnership = ISkinOwnership(_skinOwnershipAddress);
-        game = _game;
 
         //initial data
         gameSkinPrices[1] = 10000000000;
@@ -169,14 +170,15 @@ contract SkinMarket {
         uint256 skinId,
         string memory _userName,
         address payable _walletAddress,
-        uint256 _price
+        uint256 _price,
+        address payable _gameCompany
     ) public {
         skinSeller memory newSeller = skinSeller({
             id: skinSellers[skinId].length,
             userName: _userName,
             walletAddress: _walletAddress,
             price: _price,
-            gameCompany: game
+            gameCompany: _gameCompany
         });
 
         skinSellers[skinId].push(newSeller);
