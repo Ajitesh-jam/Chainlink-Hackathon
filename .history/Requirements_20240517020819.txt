@@ -1,3 +1,0 @@
-thirdweb
-npx thirdweb create contarct //check
-npx thirdweb deploy

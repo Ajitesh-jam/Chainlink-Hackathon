@@ -1,6 +1,0 @@
-thirdweb
-npx thirdweb create contarct //check
-npx thirdweb deploy
-npm i react-router-dom
-web3
-npm i bootstrap@5.3.3
