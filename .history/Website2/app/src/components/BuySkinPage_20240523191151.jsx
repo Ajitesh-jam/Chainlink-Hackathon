@@ -220,7 +220,6 @@ function CardComponent({ username, price, buy }) {
 
 function BuySkinPage(props) {
   let [connectedAccount, setConnectedAccount] = useState(null);
-
   const [skins, setSkins] = useState([]);
   const { userName,skinId } = useParams();
       const skinMarketAdd =
@@ -233,15 +232,26 @@ function BuySkinPage(props) {
     async function fetchSkins() {
       try {
         const skinMarketContract = new web3.eth.Contract(skinMarketABI, skinMarketAdd);
-        const skinIds = await skinMarketContract.methods.getSellers(skinId).call();
+        const skinIds = await contract.methods.getAllTokens().call();
         console.log("Skin Ids: ", skinIds);
-        
-        
+        const skinPromises = skinIds.map(async (skinId) => {
+          const skin = await contract.methods.getSkin(skinId).call();
+          console.log("Skin: ", skin);
+          return {
+            skinId: skinId,
+            userName: skin.userName,
+            price: web3.utils.fromWei(skin.price.toString(), "ether"),
+            WalletAddress: skin.WalletAddress
+          };
+        });
+        const skinData = await Promise.all(skinPromises);
+        setSkins(skinData);
         
       } catch (e) {
         console.error("Error fetching skins: ", e);
       }
     }
+
     fetchSkins();
   }, [skinId]);//Taaki ek hi baar call ho
   
@@ -251,69 +261,95 @@ function BuySkinPage(props) {
     setConnectedAccount(accounts[0]);
     connectedAccount=accounts[0];
     console.log("Connected account:", accounts[0]);
-
+      setGameCompany(accounts[8]);
+      gameCompany=accounts[8];
+        // if (window.ethereum) {
+    //   try {
+    //     // Request access to MetaMask accounts
+    //     const accounts = await window.ethereum.request({
+    //       method: "eth_requestAccounts",
+    //     });
+    //     if (accounts.length > 0) {
+    //       setConnectedAccount(accounts[0]);
+    //       console.log("Connected account:", accounts[0]);
+    //       setSeller(accounts[2]);
+    //       setGameCompany(accounts[1]);
+    //       console.log("seller -- ", seller);
+    //       console.log("gameCompany -- ", gameCompany);
+    //       // Initialize Web3 and contract here if needed
+    //     }
+    //   } catch (error) {
+    //     if (error.code === 4001) {
+    //       console.log("User rejected account access");
+    //     } else {
+    //       console.error("Error:", error);
+    //     }
+    //   }
+    // } else {
+    //   console.error("MetaMask not found");
+    // }  
   }
 
-  // async function BuySkin(skin) {
+  async function BuySkin(skin) {
 
-  //   console.log("Buying skin: ", skin);
+    console.log("Buying skin: ", skin);
     
-  //   try {
-  //     await connectWallet();
+    try {
+      await connectWallet();
  
-  //     const contract = new web3.eth.Contract(contractABI, contractAddress);
-  //     const amountInWei = web3.utils.toWei(skin.price.toString(), "ether");
-  //     const gasPrice = await web3.eth.getGasPrice();
-  //     const gasLimit = await contract.methods
-  //       .Buy(skin.WalletAddress, gameCompany)
-  //       .estimateGas({
-  //         from: connectedAccount,
-  //         value: amountInWei,
-  //       });
-  //     console.log("Amount in wei : ",amountInWei,"\nConnect Account :",connectedAccount,"\nGameCompany :",gameCompany,"\nseller :",skin.WalletAddress);  
+      const contract = new web3.eth.Contract(contractABI, contractAddress);
+      const amountInWei = web3.utils.toWei(skin.price.toString(), "ether");
+      const gasPrice = await web3.eth.getGasPrice();
+      const gasLimit = await contract.methods
+        .Buy(skin.WalletAddress, gameCompany)
+        .estimateGas({
+          from: connectedAccount,
+          value: amountInWei,
+        });
+      console.log("Amount in wei : ",amountInWei,"\nConnect Account :",connectedAccount,"\nGameCompany :",gameCompany,"\nseller :",skin.WalletAddress);  
 
 
-  //     // Display a confirmation dialog
-  //     const confirmed = window.confirm(`Are you sure you want to buy the skin from ${skin.userName} for ${skin.price} ETH?`);
+      // Display a confirmation dialog
+      const confirmed = window.confirm(`Are you sure you want to buy the skin from ${skin.userName} for ${skin.price} ETH?`);
       
-  //     if (!confirmed) {
-  //       return; // Exit the function if not confirmed
-  //     }
+      if (!confirmed) {
+        return; // Exit the function if not confirmed
+      }
 
-  //     try {
-  //     await contract.methods
-  //       .Buy(skin.WalletAddress, gameCompany)
-  //       .send({
-  //         from: connectedAccount,
-  //         value: amountInWei,
-  //         gas: gasLimit,
-  //         gasPrice: gasPrice,
-  //       })
-  //       .on("receipt", (receipt) => {
-  //         console.log("Transaction receipt:", receipt);
-  //         console.log("Transaction hash:", receipt.transactionHash);
-  //       })
-  //       .on("error", (error) => {
-  //         console.error("Transaction error:", error);
-  //       });
-
-
-  //     // Update the server
-  //     await axios.delete(`http://localhost:5001/${skin.userName}/Buy/${skin.skinId}`);
-  //     await axios.put(`http://localhost:5001/${userName}/Skin`, {
-  //       skinIds: [skin.skinId]
-  //     });
-  //     } catch (error) {
-
-  //       console.error("Error in buying skin:", error);
-  //     }
+      try {
+      await contract.methods
+        .Buy(skin.WalletAddress, gameCompany)
+        .send({
+          from: connectedAccount,
+          value: amountInWei,
+          gas: gasLimit,
+          gasPrice: gasPrice,
+        })
+        .on("receipt", (receipt) => {
+          console.log("Transaction receipt:", receipt);
+          console.log("Transaction hash:", receipt.transactionHash);
+        })
+        .on("error", (error) => {
+          console.error("Transaction error:", error);
+        });
 
 
-  //     console.log("Skin bought and database updated successfully.");
-  //   } catch (error) {
-  //     console.error("Error in buying skin:", error);
-  //   }
-  // }
+      // Update the server
+      await axios.delete(`http://localhost:5001/${skin.userName}/Buy/${skin.skinId}`);
+      await axios.put(`http://localhost:5001/${userName}/Skin`, {
+        skinIds: [skin.skinId]
+      });
+      } catch (error) {
+
+        console.error("Error in buying skin:", error);
+      }
+
+
+      console.log("Skin bought and database updated successfully.");
+    } catch (error) {
+      console.error("Error in buying skin:", error);
+    }
+  }
 
   function shortAddress(address, startLength = 6, endLength = 4) {
     return `${address.slice(0, startLength)}...${address.slice(-endLength)}`;
@@ -330,7 +366,7 @@ function BuySkinPage(props) {
         )}
       </div>
 
-      {/* <div>
+      <div>
         {skins.map((skin, index) => (
           <CardComponent 
             key={index} 
@@ -339,7 +375,7 @@ function BuySkinPage(props) {
             buy={() => BuySkin(skin)} 
           />
         ))}
-      </div> */}
+      </div>
     </>
   );
 }

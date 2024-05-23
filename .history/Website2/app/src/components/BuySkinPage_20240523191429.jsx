@@ -220,7 +220,6 @@ function CardComponent({ username, price, buy }) {
 
 function BuySkinPage(props) {
   let [connectedAccount, setConnectedAccount] = useState(null);
-
   const [skins, setSkins] = useState([]);
   const { userName,skinId } = useParams();
       const skinMarketAdd =
@@ -233,7 +232,7 @@ function BuySkinPage(props) {
     async function fetchSkins() {
       try {
         const skinMarketContract = new web3.eth.Contract(skinMarketABI, skinMarketAdd);
-        const skinIds = await skinMarketContract.methods.getSellers(skinId).call();
+        const skinIds = await contract.methods.getSellers().call();
         console.log("Skin Ids: ", skinIds);
         
         
@@ -242,6 +241,7 @@ function BuySkinPage(props) {
         console.error("Error fetching skins: ", e);
       }
     }
+
     fetchSkins();
   }, [skinId]);//Taaki ek hi baar call ho
   
@@ -254,66 +254,66 @@ function BuySkinPage(props) {
 
   }
 
-  // async function BuySkin(skin) {
+  async function BuySkin(skin) {
 
-  //   console.log("Buying skin: ", skin);
+    console.log("Buying skin: ", skin);
     
-  //   try {
-  //     await connectWallet();
+    try {
+      await connectWallet();
  
-  //     const contract = new web3.eth.Contract(contractABI, contractAddress);
-  //     const amountInWei = web3.utils.toWei(skin.price.toString(), "ether");
-  //     const gasPrice = await web3.eth.getGasPrice();
-  //     const gasLimit = await contract.methods
-  //       .Buy(skin.WalletAddress, gameCompany)
-  //       .estimateGas({
-  //         from: connectedAccount,
-  //         value: amountInWei,
-  //       });
-  //     console.log("Amount in wei : ",amountInWei,"\nConnect Account :",connectedAccount,"\nGameCompany :",gameCompany,"\nseller :",skin.WalletAddress);  
+      const contract = new web3.eth.Contract(contractABI, contractAddress);
+      const amountInWei = web3.utils.toWei(skin.price.toString(), "ether");
+      const gasPrice = await web3.eth.getGasPrice();
+      const gasLimit = await contract.methods
+        .Buy(skin.WalletAddress, gameCompany)
+        .estimateGas({
+          from: connectedAccount,
+          value: amountInWei,
+        });
+      console.log("Amount in wei : ",amountInWei,"\nConnect Account :",connectedAccount,"\nGameCompany :",gameCompany,"\nseller :",skin.WalletAddress);  
 
 
-  //     // Display a confirmation dialog
-  //     const confirmed = window.confirm(`Are you sure you want to buy the skin from ${skin.userName} for ${skin.price} ETH?`);
+      // Display a confirmation dialog
+      const confirmed = window.confirm(`Are you sure you want to buy the skin from ${skin.userName} for ${skin.price} ETH?`);
       
-  //     if (!confirmed) {
-  //       return; // Exit the function if not confirmed
-  //     }
+      if (!confirmed) {
+        return; // Exit the function if not confirmed
+      }
 
-  //     try {
-  //     await contract.methods
-  //       .Buy(skin.WalletAddress, gameCompany)
-  //       .send({
-  //         from: connectedAccount,
-  //         value: amountInWei,
-  //         gas: gasLimit,
-  //         gasPrice: gasPrice,
-  //       })
-  //       .on("receipt", (receipt) => {
-  //         console.log("Transaction receipt:", receipt);
-  //         console.log("Transaction hash:", receipt.transactionHash);
-  //       })
-  //       .on("error", (error) => {
-  //         console.error("Transaction error:", error);
-  //       });
-
-
-  //     // Update the server
-  //     await axios.delete(`http://localhost:5001/${skin.userName}/Buy/${skin.skinId}`);
-  //     await axios.put(`http://localhost:5001/${userName}/Skin`, {
-  //       skinIds: [skin.skinId]
-  //     });
-  //     } catch (error) {
-
-  //       console.error("Error in buying skin:", error);
-  //     }
+      try {
+      await contract.methods
+        .Buy(skin.WalletAddress, gameCompany)
+        .send({
+          from: connectedAccount,
+          value: amountInWei,
+          gas: gasLimit,
+          gasPrice: gasPrice,
+        })
+        .on("receipt", (receipt) => {
+          console.log("Transaction receipt:", receipt);
+          console.log("Transaction hash:", receipt.transactionHash);
+        })
+        .on("error", (error) => {
+          console.error("Transaction error:", error);
+        });
 
 
-  //     console.log("Skin bought and database updated successfully.");
-  //   } catch (error) {
-  //     console.error("Error in buying skin:", error);
-  //   }
-  // }
+      // Update the server
+      await axios.delete(`http://localhost:5001/${skin.userName}/Buy/${skin.skinId}`);
+      await axios.put(`http://localhost:5001/${userName}/Skin`, {
+        skinIds: [skin.skinId]
+      });
+      } catch (error) {
+
+        console.error("Error in buying skin:", error);
+      }
+
+
+      console.log("Skin bought and database updated successfully.");
+    } catch (error) {
+      console.error("Error in buying skin:", error);
+    }
+  }
 
   function shortAddress(address, startLength = 6, endLength = 4) {
     return `${address.slice(0, startLength)}...${address.slice(-endLength)}`;
@@ -330,7 +330,7 @@ function BuySkinPage(props) {
         )}
       </div>
 
-      {/* <div>
+      <div>
         {skins.map((skin, index) => (
           <CardComponent 
             key={index} 
@@ -339,7 +339,7 @@ function BuySkinPage(props) {
             buy={() => BuySkin(skin)} 
           />
         ))}
-      </div> */}
+      </div>
     </>
   );
 }

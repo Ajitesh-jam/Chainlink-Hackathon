@@ -166,33 +166,17 @@ contract SkinMarket {
 // 	{
 // 		"inputs": [
 // 			{
-// 				"internalType": "address",
-// 				"name": "_skinOwnershipAddress",
-// 				"type": "address"
+// 				"internalType": "string",
+// 				"name": "_username",
+// 				"type": "string"
 // 			},
-// 			{
-// 				"internalType": "address payable",
-// 				"name": "_game",
-// 				"type": "address"
-// 			}
-// 		],
-// 		"stateMutability": "nonpayable",
-// 		"type": "constructor"
-// 	},
-// 	{
-// 		"inputs": [
 // 			{
 // 				"internalType": "uint256",
 // 				"name": "_skinId",
 // 				"type": "uint256"
-// 			},
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "price",
-// 				"type": "uint256"
 // 			}
 // 		],
-// 		"name": "AddOrEditSkin",
+// 		"name": "addSkinToUser",
 // 		"outputs": [],
 // 		"stateMutability": "nonpayable",
 // 		"type": "function"
@@ -200,155 +184,61 @@ contract SkinMarket {
 // 	{
 // 		"inputs": [
 // 			{
-// 				"internalType": "uint256",
-// 				"name": "_skinId",
-// 				"type": "uint256"
-// 			},
+// 				"internalType": "string",
+// 				"name": "_username",
+// 				"type": "string"
+// 			}
+// 		],
+// 		"name": "deleteUser",
+// 		"outputs": [],
+// 		"stateMutability": "nonpayable",
+// 		"type": "function"
+// 	},
+// 	{
+// 		"inputs": [
 // 			{
 // 				"internalType": "string",
 // 				"name": "_userName",
 // 				"type": "string"
 // 			}
 // 		],
-// 		"name": "buyFromGame",
-// 		"outputs": [],
-// 		"stateMutability": "payable",
-// 		"type": "function"
-// 	},
-// 	{
-// 		"inputs": [
-// 			{
-// 				"internalType": "string",
-// 				"name": "userName",
-// 				"type": "string"
-// 			},
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "skinId",
-// 				"type": "uint256"
-// 			},
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "sellerId",
-// 				"type": "uint256"
-// 			}
-// 		],
-// 		"name": "buySkin",
-// 		"outputs": [
-// 			{
-// 				"internalType": "bool",
-// 				"name": "",
-// 				"type": "bool"
-// 			}
-// 		],
-// 		"stateMutability": "payable",
-// 		"type": "function"
-// 	},
-// 	{
-// 		"inputs": [],
-// 		"name": "game",
-// 		"outputs": [
-// 			{
-// 				"internalType": "address payable",
-// 				"name": "",
-// 				"type": "address"
-// 			}
-// 		],
-// 		"stateMutability": "view",
-// 		"type": "function"
-// 	},
-// 	{
-// 		"inputs": [
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "skinId",
-// 				"type": "uint256"
-// 			},
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "id",
-// 				"type": "uint256"
-// 			}
-// 		],
-// 		"name": "getSeller",
+// 		"name": "getUser",
 // 		"outputs": [
 // 			{
 // 				"components": [
 // 					{
-// 						"internalType": "uint256",
-// 						"name": "id",
-// 						"type": "uint256"
-// 					},
-// 					{
 // 						"internalType": "string",
-// 						"name": "userName",
+// 						"name": "username",
 // 						"type": "string"
 // 					},
 // 					{
-// 						"internalType": "address payable",
-// 						"name": "walletAddress",
-// 						"type": "address"
-// 					},
-// 					{
-// 						"internalType": "uint256",
-// 						"name": "price",
-// 						"type": "uint256"
-// 					},
-// 					{
-// 						"internalType": "address payable",
-// 						"name": "gameCompany",
-// 						"type": "address"
+// 						"internalType": "uint256[]",
+// 						"name": "skinIds",
+// 						"type": "uint256[]"
 // 					}
 // 				],
-// 				"internalType": "struct SkinMarket.skinSeller",
+// 				"internalType": "struct ISkinOwnership.skinOwner",
 // 				"name": "",
 // 				"type": "tuple"
 // 			}
 // 		],
-// 		"stateMutability": "view",
+// 		"stateMutability": "nonpayable",
 // 		"type": "function"
 // 	},
 // 	{
 // 		"inputs": [
 // 			{
-// 				"internalType": "uint256",
-// 				"name": "skinId",
-// 				"type": "uint256"
+// 				"internalType": "string",
+// 				"name": "_username",
+// 				"type": "string"
 // 			}
 // 		],
-// 		"name": "getSellers",
+// 		"name": "getUserSkins",
 // 		"outputs": [
 // 			{
-// 				"components": [
-// 					{
-// 						"internalType": "uint256",
-// 						"name": "id",
-// 						"type": "uint256"
-// 					},
-// 					{
-// 						"internalType": "string",
-// 						"name": "userName",
-// 						"type": "string"
-// 					},
-// 					{
-// 						"internalType": "address payable",
-// 						"name": "walletAddress",
-// 						"type": "address"
-// 					},
-// 					{
-// 						"internalType": "uint256",
-// 						"name": "price",
-// 						"type": "uint256"
-// 					},
-// 					{
-// 						"internalType": "address payable",
-// 						"name": "gameCompany",
-// 						"type": "address"
-// 					}
-// 				],
-// 				"internalType": "struct SkinMarket.skinSeller[]",
+// 				"internalType": "uint256[]",
 // 				"name": "",
-// 				"type": "tuple[]"
+// 				"type": "uint256[]"
 // 			}
 // 		],
 // 		"stateMutability": "view",
@@ -356,119 +246,20 @@ contract SkinMarket {
 // 	},
 // 	{
 // 		"inputs": [
+// 			{
+// 				"internalType": "string",
+// 				"name": "_username",
+// 				"type": "string"
+// 			},
 // 			{
 // 				"internalType": "uint256",
 // 				"name": "_skinId",
 // 				"type": "uint256"
 // 			}
 // 		],
-// 		"name": "getSkinPriceFromGame",
-// 		"outputs": [
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "",
-// 				"type": "uint256"
-// 			}
-// 		],
-// 		"stateMutability": "view",
-// 		"type": "function"
-// 	},
-// 	{
-// 		"inputs": [],
-// 		"name": "owner",
-// 		"outputs": [
-// 			{
-// 				"internalType": "address payable",
-// 				"name": "",
-// 				"type": "address"
-// 			}
-// 		],
-// 		"stateMutability": "view",
-// 		"type": "function"
-// 	},
-// 	{
-// 		"inputs": [
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "skinId",
-// 				"type": "uint256"
-// 			},
-// 			{
-// 				"internalType": "string",
-// 				"name": "_userName",
-// 				"type": "string"
-// 			},
-// 			{
-// 				"internalType": "address payable",
-// 				"name": "_walletAddress",
-// 				"type": "address"
-// 			},
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "_price",
-// 				"type": "uint256"
-// 			}
-// 		],
-// 		"name": "sellSkin",
+// 		"name": "removeSkinFromUser",
 // 		"outputs": [],
 // 		"stateMutability": "nonpayable",
-// 		"type": "function"
-// 	},
-// 	{
-// 		"inputs": [],
-// 		"name": "skinOwnership",
-// 		"outputs": [
-// 			{
-// 				"internalType": "contract ISkinOwnership",
-// 				"name": "",
-// 				"type": "address"
-// 			}
-// 		],
-// 		"stateMutability": "view",
-// 		"type": "function"
-// 	},
-// 	{
-// 		"inputs": [
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "",
-// 				"type": "uint256"
-// 			},
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "",
-// 				"type": "uint256"
-// 			}
-// 		],
-// 		"name": "skinSellers",
-// 		"outputs": [
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "id",
-// 				"type": "uint256"
-// 			},
-// 			{
-// 				"internalType": "string",
-// 				"name": "userName",
-// 				"type": "string"
-// 			},
-// 			{
-// 				"internalType": "address payable",
-// 				"name": "walletAddress",
-// 				"type": "address"
-// 			},
-// 			{
-// 				"internalType": "uint256",
-// 				"name": "price",
-// 				"type": "uint256"
-// 			},
-// 			{
-// 				"internalType": "address payable",
-// 				"name": "gameCompany",
-// 				"type": "address"
-// 			}
-// 		],
-// 		"stateMutability": "view",
 // 		"type": "function"
 // 	}
 // ]

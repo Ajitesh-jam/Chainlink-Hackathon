@@ -21,7 +21,6 @@ mongoose
   });
 
 //1st database - SkinId  - Seller
-
 // Route to get all sellers with a specific skinId
 app.get("/:id", async (req, res) => {
   try {

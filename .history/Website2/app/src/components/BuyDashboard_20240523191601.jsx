@@ -79,6 +79,8 @@ function BuyDash() {
   // }
 
 
+
+
   return (<>
   
       <div className="App">
@@ -91,7 +93,7 @@ function BuyDash() {
         )}
       </div>
       <br></br>
-      {/* <button onClick={getContractAddresses}>Get Details</button> */}
+      <button onClick={getContractAddresses}>Get Details</button>
 
       <br></br>
       {/* <button onClick={Buy}>Buy</button> */}

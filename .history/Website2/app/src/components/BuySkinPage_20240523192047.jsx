@@ -242,6 +242,7 @@ function BuySkinPage(props) {
         console.error("Error fetching skins: ", e);
       }
     }
+
     fetchSkins();
   }, [skinId]);//Taaki ek hi baar call ho
   

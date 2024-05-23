@@ -220,7 +220,6 @@ function CardComponent({ username, price, buy }) {
 
 function BuySkinPage(props) {
   let [connectedAccount, setConnectedAccount] = useState(null);
-
   const [skins, setSkins] = useState([]);
   const { userName,skinId } = useParams();
       const skinMarketAdd =
@@ -233,7 +232,7 @@ function BuySkinPage(props) {
     async function fetchSkins() {
       try {
         const skinMarketContract = new web3.eth.Contract(skinMarketABI, skinMarketAdd);
-        const skinIds = await skinMarketContract.methods.getSellers(skinId).call();
+        const skinIds = await skinMarketContract.methods.getSellers().call();
         console.log("Skin Ids: ", skinIds);
         
         
@@ -242,6 +241,7 @@ function BuySkinPage(props) {
         console.error("Error fetching skins: ", e);
       }
     }
+
     fetchSkins();
   }, [skinId]);//Taaki ek hi baar call ho
   

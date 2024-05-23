@@ -65,18 +65,20 @@ function BuyDash() {
   //   }
   // }
 
-  // async function getContractAddresses() {
-  //   const contract = new web3.eth.Contract(contractABI, contractAddress);
+  async function getContractAddresses() {
+    const contract = new web3.eth.Contract(contractABI, contractAddress);
 
-  //   try {
-  //     const owner = await contract.methods.owner().call();
+    try {
+      const owner = await contract.methods.owner().call();
 
-  //     console.log("Owner:", owner);
-  //     console.log("Seller:", seller);
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   }
-  // }
+      console.log("Owner:", owner);
+      console.log("Seller:", seller);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+
 
 
   return (<>
@@ -91,7 +93,7 @@ function BuyDash() {
         )}
       </div>
       <br></br>
-      {/* <button onClick={getContractAddresses}>Get Details</button> */}
+      <button onClick={getContractAddresses}>Get Details</button>
 
       <br></br>
       {/* <button onClick={Buy}>Buy</button> */}
