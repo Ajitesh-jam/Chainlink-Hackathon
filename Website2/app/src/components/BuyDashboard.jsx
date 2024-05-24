@@ -1,146 +1,130 @@
-import React ,{useState}from 'react';
-import contractABI from "../abi1.json";
-import Web3 from "web3";
-import bacchiImg from "./assets/Bacchi.png";
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import Web3 from 'web3';
+import id0 from "./assets/Bacchi.png";
+import id1 from "./assets/woman.png";
+import id2 from "./assets/Woman-cloth.png";
+import id3 from "./assets/Woman-skirt.png";
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import skinMarketABI from './abis/skinMarket.json';
 
+// Map skinId to corresponding image import
+const skinImages = {
+  0: id0,
+  1: id1,
+  2: id2,
+  3: id3,
+};
 
-//Default dashboard rahega
-
-//let web3 = new Web3(window.ethereum); //Sepolia
-
-let web3 = new Web3(new Web3.providers.HttpProvider("HTTP://127.0.0.1:7545")); //Ganache
-//window.ethereum
+function CardComponent({ skinId, username, price, buy }) {
+  return (
+    <Card style={{ width: '18rem' }}>
+      <Card.Img variant="top" src={skinImages[skinId]} />
+      <Card.Body>
+        <Card.Title>{username}</Card.Title>
+        <Card.Text>Price: {price} ETH</Card.Text>
+        <Button variant="primary" onClick={buy}>BUY</Button>
+      </Card.Body>
+    </Card>
+  );
+}
 
 function BuyDash() {
-    const contractAddress =
-    "0x5070ee85A360899882E907c213cb7147c14466D4";// ganache address
-    //"0xb346d01c452a91f19895F5f26Ef845C1DE87b398"; //Sepolia address
-  const [connectedAccount, setConnectedAccount] = useState("");
-  const [seller, setSeller] = useState("");
-  const [gameCompany, setGameCompany] = useState("");
+  const [skins, setSkins] = useState([]);
+  let connectedAccount ;
+  const skinMarketAdd = "0x0DedDe527e2B24a6c2B3bF5F3E7488517E37F3AD"; // Address from .env file
+  const web3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545"); // Ganache
 
-  async function connectWallet() {
-    web3.eth.getAccounts().then((accounts) => {
-      setConnectedAccount(accounts[0]);
-      setSeller(accounts[3]);
-      setGameCompany(accounts[1]);
+  useEffect(() => {
+    connectWallet();
+    ShowAllSkins();
+  }, []);
+
+  async function connectWallet() {//function jissey wallet connect hojayega
+    try {
+      const accounts = await web3.eth.getAccounts();
+      connectedAccount=accounts[0];
       console.log("Connected account:", accounts[0]);
-      console.log("seller -- ", seller);
-      console.log("gameCompany -- ", gameCompany);
-    });
-    // if (window.ethereum) {
-    //   try {
-    //     // Request access to MetaMask accounts
-    //     const accounts = await window.ethereum.request({
-    //       method: "eth_requestAccounts",
-    //     });
-    //     if (accounts.length > 0) {
-    //       setConnectedAccount(accounts[0]);
-    //       console.log("Connected account:", accounts[0]);
-    //       setSeller(accounts[2]);
-    //       setGameCompany(accounts[1]);
-    //       console.log("seller -- ", seller);
-    //       console.log("gameCompany -- ", gameCompany);
-    //       // Initialize Web3 and contract here if needed
-    //     }
-    //   } catch (error) {
-    //     if (error.code === 4001) {
-    //       console.log("User rejected account access");
-    //     } else {
-    //       console.error("Error:", error);
-    //     }
-    //   }
-    // } else {
-    //   console.error("MetaMask not found");
-    // }
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+    }
+  }
+
+  async function ShowAllSkins() {
+    const skinMarket = new web3.eth.Contract(skinMarketABI, skinMarketAdd);
+    try {
+      const skinIds = await skinMarket.methods.getAllSkins().call();
+      const allSellers = await Promise.all(skinIds.map(async (skinId) => {
+        const sellers = await skinMarket.methods.getSellers(skinId).call();
+        return sellers.map((seller, index) => ({
+          skinId,
+          seller,
+        }));
+      }));
+
+        //sellers will be kinda this type - 
+          //         [{…}]
+          // 0
+          // : 
+          // {0: 0n, 1: 'Devansh', 2: '0xeE3bbfDC858F71d0Ab57f17F3585db1b4DA68574', 3: 100000n, 4: '0x511d5A0649630213E26c071b861c5cB1A8609346', __length__: 5, id: 0n, userName: 'Devansh', walletAddress: '0xeE3bbfDC858F71d0Ab57f17F3585db1b4DA68574', price: 100000n, …}
+          // length
+          // : 
+          // 1
+          // [[Prototype]]
+          // : 
+          // Array(0)
+
+      const sellerCards = allSellers.flat().map(({ skinId, seller }, index) => (
+        <CardComponent 
+          key={index} 
+          skinId={skinId}
+          username={seller.userName}
+          price={web3.utils.fromWei(seller.price.toString(), 'ether')}
+          buy={() => BuySkin(skinId, seller.id)}
+        />
+      ));
+      setSkins(sellerCards);
+    } catch (error) {
+      console.error("Error fetching sellers:", error);
+    }
+  }
+
+  async function BuySkin(skinId, sellerId) {
+    const skinMarket = new web3.eth.Contract(skinMarketABI, skinMarketAdd);
+    const seller = await skinMarket.methods.getSeller(skinId, sellerId).call();
+    try {
+      await skinMarket.methods.buySkin(seller.userName, skinId, sellerId).send({ 
+        from: connectedAccount, 
+        value: seller.price 
+      });
+      alert("Skin purchased successfully!");
+      ShowAllSkins();
+    } catch (error) {
+      console.error("Error buying skin:", error);
+      alert("Error buying skin: " + error.message);
+    }
   }
 
   function shortAddress(address, startLength = 6, endLength = 4) {
     return `${address.slice(0, startLength)}...${address.slice(-endLength)}`;
   }
-  async function Buy() {
-    const contract = new web3.eth.Contract(contractABI, contractAddress);
-    const amountInWei = web3.utils.toWei("1", "ether"); // Amount to send in wei
-    const gasPrice = await web3.eth.getGasPrice(); // Get current gas price
-    console.log("Connected Account: ", connectedAccount);
 
-    try {
-      const gasLimit = await contract.methods
-        .Buy(seller, gameCompany)
-        .estimateGas({
-          from: connectedAccount,
-          value: amountInWei,
-        });
-
-      await contract.methods
-        .Buy(seller, gameCompany)
-        .send({
-          from: connectedAccount,
-          value: amountInWei,
-          gas: gasLimit,
-          gasPrice: gasPrice,
-        })
-        .on("receipt", (receipt) => {
-          console.log("Transaction receipt:", receipt);
-          console.log("Transaction hash:", receipt.transactionHash);
-        })
-        .on("error", (error) => {
-          console.error("Transaction error:", error);
-        });
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  async function getContractAddresses() {
-    const contract = new web3.eth.Contract(contractABI, contractAddress);
-
-    try {
-      const owner = await contract.methods.owner().call();
-
-      console.log("Owner:", owner);
-      console.log("Seller:", seller);
-      console.log("Game Company:", gameCompany);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }
-
-
-
-
-  return (<>
-  
+  return (
+    <>
       <div className="App">
         <button onClick={connectWallet}>Connect Wallet</button>
         {connectedAccount && (
           <div>
             <p>Connected: {shortAddress(connectedAccount)}</p>
-            {/* Add more UI elements or actions here */}
           </div>
         )}
       </div>
-      <br></br>
-      <button onClick={getContractAddresses}>Get Details</button>
-
-      <br></br>
-      <button onClick={Buy}>Buy</button>
-      <br></br>
-     
-      <br></br>
-        <img src={bacchiImg} alt="bacchi" />
-        <br></br>
-        <Link to={{
-      pathname: '/Ajitesh/Buy/1',
-      state:{WalletAddress:1}
-    }}>
-      <button>BUY SKIN</button>
-    </Link>
-
-
-  </>
+      <div>
+        {skins}
+      </div>
+    </>
   );
 }
 
 export default BuyDash;
+

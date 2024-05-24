@@ -14,7 +14,6 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* //CompanyList */}
-
           <Route path="/:userName/Sell" element={<SellDash />} />
           <Route path="/:userName/DashBoard" element={<BuyDash />} />
           <Route path="/:userName/Buy/:skinId" element={<BuySkinPage />} />

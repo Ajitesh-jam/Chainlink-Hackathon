@@ -2,14 +2,14 @@
 pragma solidity ^0.8.0;
 
 interface ISkinOwnership {
-    struct skinOwner {
+    struct SkinOwner {
         string username;
         uint256[] skinIds;
     }
 
     function getUser(
         string memory _userName
-    ) external returns (skinOwner memory);
+    ) external returns (SkinOwner memory);
 
     function deleteUser(string memory _username) external;
 
@@ -26,7 +26,7 @@ interface ISkinOwnership {
 
     function createUser(
         string memory _userName
-    ) external returns (skinOwner memory);
+    ) external returns (SkinOwner memory);
 }
 
 contract SkinMarket {
@@ -34,20 +34,45 @@ contract SkinMarket {
     address payable public game;
     ISkinOwnership public skinOwnership;
 
-    struct skinSeller {
-        uint256 id; // New field to store the seller's id
+    struct SkinSeller {
+        uint256 id;
         string userName;
         address payable walletAddress;
         uint256 price;
         address payable gameCompany;
     }
 
-    mapping(uint256 => skinSeller[]) public skinSellers;
+    mapping(uint256 => SkinSeller[]) public skinSellers;
     mapping(uint256 => uint256) private gameSkinPrices;
+    uint256[] public allSkins;
+
+    constructor(address _skinOwnershipAddress, address payable _game) {
+        owner = payable(msg.sender);
+        skinOwnership = ISkinOwnership(_skinOwnershipAddress);
+        game = _game;
+
+        // Initial data -all skins costs 1 eth in game
+        uint256 initialPrice = 1 ether;
+        for (uint256 i = 1; i <= 5; i++) {
+            gameSkinPrices[i] = initialPrice;
+            allSkins.push(i);
+        }
+    }
 
     function AddOrEditSkin(uint256 _skinId, uint256 price) external {
         require(msg.sender == owner, "Only owner can modify this");
         gameSkinPrices[_skinId] = price;
+
+        bool skinExists = false;
+        for (uint256 i = 0; i < allSkins.length; i++) {
+            if (allSkins[i] == _skinId) {
+                skinExists = true;
+                break;
+            }
+        }
+        if (!skinExists) {
+            allSkins.push(_skinId);
+        }
     }
 
     function getSkinPriceFromGame(
@@ -60,62 +85,35 @@ contract SkinMarket {
         uint256 _skinId,
         string memory _userName
     ) public payable {
-        //but issey game se buy karney ke liye apn ke platform se jana padega
-        //plus koi nai skin add karney ke liye
-        game.transfer(gameSkinPrices[_skinId]);
-        // Update SkinOwner struct to add the bought skin
+        require(msg.value == gameSkinPrices[_skinId], "Incorrect price sent");
+        game.transfer(msg.value);
 
-        if (bytes(skinOwnership.getUser(_userName).username).length > 0) {
-            skinOwnership.addSkinToUser(
-                skinOwnership.getUser(_userName).username, //yaha pe get user kyuki agar nhi exists karta toh user bana ke add karo
-                _skinId
-            );
-        } else {
-            skinOwnership.addSkinToUser(
-                skinOwnership.createUser(_userName).username, //yaha pe get user kyuki agar nhi exists karta toh user bana ke add karo
-                _skinId
-            );
+        ISkinOwnership.SkinOwner memory user = skinOwnership.getUser(_userName);
+        if (bytes(user.username).length == 0) {
+            skinOwnership.createUser(_userName);
         }
-    }
 
-    constructor(address _skinOwnershipAddress, address payable _game) {
-        owner = payable(msg.sender);
-        skinOwnership = ISkinOwnership(_skinOwnershipAddress);
-        game = _game;
-
-        //initial data
-        gameSkinPrices[1] = 10000000000;
-        gameSkinPrices[2] = 10000000000;
-        gameSkinPrices[3] = 10000000000;
-        gameSkinPrices[4] = 10000000000;
-        gameSkinPrices[5] = 10000000000;
+        skinOwnership.addSkinToUser(_userName, _skinId);
     }
 
     function getSellers(
         uint256 skinId
-    ) public view returns (skinSeller[] memory) {
+    ) public view returns (SkinSeller[] memory) {
         return skinSellers[skinId];
     }
 
     function getSeller(
         uint256 skinId,
         uint256 id
-    ) public view returns (skinSeller memory) {
+    ) public view returns (SkinSeller memory) {
         require(skinSellers[skinId].length > 0, "No sellers for this skin ID");
-
-        skinSeller memory seller;
-        bool sellerFound = false;
 
         for (uint256 i = 0; i < skinSellers[skinId].length; i++) {
             if (skinSellers[skinId][i].id == id) {
-                seller = skinSellers[skinId][i];
-                sellerFound = true;
-                break;
+                return skinSellers[skinId][i];
             }
         }
-
-        require(sellerFound, "Seller not found");
-        return seller;
+        revert("Seller not found");
     }
 
     function buySkin(
@@ -125,8 +123,7 @@ contract SkinMarket {
     ) public payable returns (bool) {
         require(skinSellers[skinId].length > 0, "No sellers for this skin ID");
 
-        skinSeller memory seller = getSeller(skinId, sellerId);
-
+        SkinSeller memory seller = getSeller(skinId, sellerId);
         require(msg.value == seller.price, "Incorrect price sent");
 
         uint256 totalAmount = msg.value;
@@ -135,10 +132,9 @@ contract SkinMarket {
         uint256 amountToOwner = (totalAmount * 1) / 100;
 
         seller.walletAddress.transfer(amountToSeller);
-        payable(owner).transfer(amountToOwner);
+        owner.transfer(amountToOwner);
         seller.gameCompany.transfer(amountToGameCompany);
 
-        // Remove the seller from the array after a successful transaction //buy confirmed
         for (uint256 i = 0; i < skinSellers[skinId].length; i++) {
             if (skinSellers[skinId][i].id == sellerId) {
                 skinSellers[skinId][i] = skinSellers[skinId][
@@ -149,18 +145,12 @@ contract SkinMarket {
             }
         }
 
-        // Update SkinOwner struct to add the bought skin
-        if (bytes(skinOwnership.getUser(userName).username).length > 0) {
-            skinOwnership.addSkinToUser(
-                skinOwnership.getUser(userName).username, //yaha pe get user kyuki agar nhi exists karta toh user bana ke add karo
-                skinId
-            );
-        } else {
-            skinOwnership.addSkinToUser(
-                skinOwnership.createUser(userName).username,
-                skinId
-            );
+        ISkinOwnership.SkinOwner memory user = skinOwnership.getUser(userName);
+        if (bytes(user.username).length == 0) {
+            skinOwnership.createUser(userName);
         }
+
+        skinOwnership.addSkinToUser(userName, skinId);
 
         return true;
     }
@@ -171,7 +161,18 @@ contract SkinMarket {
         address payable _walletAddress,
         uint256 _price
     ) public {
-        skinSeller memory newSeller = skinSeller({
+        uint256[] memory skins = skinOwnership.getUserSkins(_userName);
+        bool haveSkin = false;
+
+        for (uint256 i = 0; i < skins.length; i++) {
+            if (skins[i] == skinId) {
+                haveSkin = true;
+                break;
+            }
+        }
+        require(haveSkin, "You don't own this skin");
+
+        SkinSeller memory newSeller = SkinSeller({
             id: skinSellers[skinId].length,
             userName: _userName,
             walletAddress: _walletAddress,
@@ -180,10 +181,12 @@ contract SkinMarket {
         });
 
         skinSellers[skinId].push(newSeller);
-
-        // Update SkinOwner struct to remove the skin from seller
         skinOwnership.removeSkinFromUser(_userName, skinId);
+    }
+
+    function getAllSkins() external view returns (uint256[] memory) {
+        return allSkins;
     }
 }
 
-// contract address: 0x88722eEDA8FBBcE2D59cFde14C1cB8A4410DD1aE
+// contract address: 0x0DedDe527e2B24a6c2B3bF5F3E7488517E37F3AD

@@ -4,12 +4,12 @@ pragma solidity 0.8.0;
 contract SkinOwnership {
     address public owner;
 
-    struct skinOwner {
+    struct SkinOwner {
         string username;
         uint256[] skinIds;
     }
 
-    mapping(string => skinOwner) public skinOwners;
+    mapping(string => SkinOwner) public skinOwners;
 
     constructor() {
         owner = msg.sender;
@@ -17,16 +17,22 @@ contract SkinOwnership {
 
     function getUser(
         string memory _userName
-    ) external view returns (skinOwner memory) {
+    ) external view returns (SkinOwner memory) {
         return skinOwners[_userName];
     }
 
     function createUser(
         string memory _userName
-    ) external returns (skinOwner memory) {
-        // If the user does not exist, create a new skinOwner struct and store it
+    ) external returns (SkinOwner memory) {
+        // Check if user already exists
+        require(
+            bytes(skinOwners[_userName].username).length == 0,
+            "User already exists"
+        );
+
+        // If the user does not exist, create a new SkinOwner struct and store it
         uint256[] memory dynamicArray;
-        skinOwners[_userName] = skinOwner({
+        skinOwners[_userName] = SkinOwner({
             username: _userName,
             skinIds: dynamicArray // Empty array of skin IDs
         });
@@ -42,7 +48,7 @@ contract SkinOwnership {
 
         // If the user exists, delete the user
         delete skinOwners[_username];
-    } //shayd hi kaam ayega
+    }
 
     function addSkinToUser(string memory _username, uint256 _skinId) external {
         // Check if the user exists
@@ -90,4 +96,4 @@ contract SkinOwnership {
     }
 }
 
-// contract address: 0xD6f74Ca0b307e0bacf9Ecf513555f2067B351920
+// contract address: 0x87931844BaCC9A19A7f43d0Bf02f616c2d73fA9A
