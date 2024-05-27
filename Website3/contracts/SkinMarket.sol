@@ -152,7 +152,7 @@ contract SkinMarket {
 
         skinOwnership.addSkinToUser(userName, skinId);
 
-        //implement API call to add the skin to the seller -----> put("/:userName/SkinAdd")
+        //implement API call to add the skin to the buyer -----> put("/:userName/SkinAdd")
 
         return true;
     }
@@ -175,9 +175,12 @@ contract SkinMarket {
         if (!haveSkin) {
             //implement API call to fetch if user have skin from the database ----> get("/:userName")
 
-            //add data to skinOwnership
-            skinOwnership.addSkinToUser(_userName, skinId);
+            //if(skinfound)
             haveSkin = true;
+            //else return
+        } else {
+            //if skin have from contract then remove it from skinOwnership
+            skinOwnership.removeSkinFromUser(_userName, skinId);
         }
 
         require(haveSkin, "You don't own this skin");
@@ -191,9 +194,8 @@ contract SkinMarket {
         });
 
         skinSellers[skinId].push(newSeller);
-        skinOwnership.removeSkinFromUser(_userName, skinId);
 
-        //implement API call to update database to remove the skin from user ----->put("/:userName/SkinRemove/:id")
+        //implement API call to update database to remove the skin from seller ----->put("/:userName/SkinRemove/:id")
     }
 
     function getAllSkins() external view returns (uint256[] memory) {
