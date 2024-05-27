@@ -22,7 +22,7 @@ mongoose
 
 //Server and smart contract  will go hand in hand
 //contract me there is one mapping userName--> {userName, skinIds[]}
-//
+//contract se data laney ki jaruat nhi as jab bhi buy sell karey hai apney app api call horey hai
 
 // Route to get all skins owned by a specific username
 app.get("/:username", async (req, res) => {
@@ -61,31 +61,9 @@ app.put("/:username/SkinRemove/:id", async (req, res) => {
   }
 });
 
-app.post("/:username/SkinAdd", async (req, res) => {
-  const { username } = req.params;
-  const skinId = req.body;
-
-  try {
-    // Create a new OwnedSkin document with the provided username and skinId
-    const newOwnedSkin = await OwnedSkin.create({
-      userName: username,
-      skinId: skinId,
-    });
-
-    // Save the newOwnedSkin document to the database
-    const savedOwnedSkin = await newOwnedSkin.save();
-
-    // Return the savedOwnedSkin as JSON response
-    res.status(201).json(savedOwnedSkin);
-  } catch (error) {
-    // If an error occurs, return an error response
-    res.status(400).json({ message: error.message });
-  }
-});
-
 // Route to add a new skin owned by a specific username (using PUT request)
-app.put("/:username/Skin", async (req, res) => {
-  //delete kaney ke liye hai
+app.put("/:username/SkinAdd", async (req, res) => {
+  //jo bi array ayega wo bass add hoga remove khcuch  bi nhai hoga
   const { username } = req.params;
   const { skinIds } = req.body;
 
@@ -94,7 +72,6 @@ app.put("/:username/Skin", async (req, res) => {
       .status(400)
       .json({ message: "skinIds should be an array of numbers" });
   }
-  //YAHA PE CONTRACT SE DATA LAKAR BHI ADD KARNA HAI
 
   try {
     // Find the user by username
@@ -119,6 +96,28 @@ app.put("/:username/Skin", async (req, res) => {
   } catch (error) {
     // If an error occurs, return an error response
     res.status(500).json({ message: error.message });
+  }
+});
+
+app.post("/:username/Skin", async (req, res) => {
+  const { username } = req.params;
+  const skinId = req.body;
+
+  try {
+    // Create a new OwnedSkin document with the provided username and skinId
+    const newOwnedSkin = await OwnedSkin.create({
+      userName: username,
+      skinId: skinId,
+    });
+
+    // Save the newOwnedSkin document to the database
+    const savedOwnedSkin = await newOwnedSkin.save();
+
+    // Return the savedOwnedSkin as JSON response
+    res.status(201).json(savedOwnedSkin);
+  } catch (error) {
+    // If an error occurs, return an error response
+    res.status(400).json({ message: error.message });
   }
 });
 
