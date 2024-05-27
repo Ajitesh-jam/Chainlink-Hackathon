@@ -1,10 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
-
 const OwnedSkin = require("./model.js");
-
 const cors = require("cors");
-
 const app = express();
 app.use(cors());
 app.use(express.json()); // Middleware to parse JSON bodies
@@ -23,7 +20,13 @@ mongoose
 
 //____________________________________________-______________________-______________________-______________________-______________________-______________________-
 
+//Server and smart contract  will go hand in hand
+//contract me there is one mapping userName--> {userName, skinIds[]}
+//
+
+// Route to get all skins owned by a specific username
 app.get("/:username", async (req, res) => {
+  //function to get user skins
   const { username } = req.params;
   console.log("get request with username : ", username);
   try {
@@ -38,7 +41,7 @@ app.get("/:username", async (req, res) => {
 });
 
 //remove specific skin
-app.put("/:username/Skin/:id", async (req, res) => {
+app.put("/:username/SkinRemove/:id", async (req, res) => {
   //delete karney ke liye hai
   const { username, id } = req.params;
 
@@ -58,7 +61,7 @@ app.put("/:username/Skin/:id", async (req, res) => {
   }
 });
 
-app.post("/:username/Skin", async (req, res) => {
+app.post("/:username/SkinAdd", async (req, res) => {
   const { username } = req.params;
   const skinId = req.body;
 
@@ -91,6 +94,7 @@ app.put("/:username/Skin", async (req, res) => {
       .status(400)
       .json({ message: "skinIds should be an array of numbers" });
   }
+  //YAHA PE CONTRACT SE DATA LAKAR BHI ADD KARNA HAI
 
   try {
     // Find the user by username
