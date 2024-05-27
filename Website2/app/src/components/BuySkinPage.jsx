@@ -113,6 +113,7 @@ function BuySkinPage() {
       }
 
     try {
+      console.log(userName,skinId,id);
       await skinMarket.methods
            .buySkin(userName,skinId,id)
            .send({
