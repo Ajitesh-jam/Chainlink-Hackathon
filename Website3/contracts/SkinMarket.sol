@@ -59,6 +59,11 @@ contract SkinMarket {
         }
     }
 
+    //function to get all skins from game
+    function getGameSkins() external view returns (uint256[] memory) {
+        return allSkins;
+    }
+
     function AddOrEditSkin(uint256 _skinId, uint256 price) external {
         require(msg.sender == owner, "Only owner can modify this");
         gameSkinPrices[_skinId] = price;
