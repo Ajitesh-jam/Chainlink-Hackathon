@@ -1,9 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const skinSeller = require("./model/skinSeller.js");
-
+const OwnedSkin = require("./model.js");
 const cors = require("cors");
-
 const app = express();
 app.use(cors());
 app.use(express.json()); // Middleware to parse JSON bodies
@@ -20,118 +18,53 @@ mongoose
     console.error("MongoDB Connection Error:", err);
   });
 
-//1st database - SkinId  - Seller
-// Route to get all sellers with a specific skinId
-app.get("/:id", async (req, res) => {
-  try {
-    const skinId = req.params.id;
-    console.log("Get Request with skin id - ", skinId);
-    // Find all skins with the given skinId
-    const skins = await skinSeller.find({ skinId: skinId });
+//____________________________________________-______________________-______________________-______________________-______________________-______________________-
 
-    if (skins.length === 0) {
-      return res.status(404).json({ message: "Skins not found" });
-    }
+//Server and smart contract  will go hand in hand
+//contract me there is one mapping userName--> {userName, skinIds[]}
+//contract se data laney ki jaruat nhi as jab bhi buy sell karey hai apney app api call horey hai
 
-    // Return the array of skins
-    res.json(skins);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: err.message });
-  }
-});
-//sell skin by a user
-app.post("/:userName/Sell/:id", async (req, res) => {
-  const skinId = req.params.id;
-  const userName = req.params.userName;
-  console.log("Post request with req.body - ", req.body);
-  try {
-    const newSkinSeller = await skinSeller.create({
-      userName: userName,
-      skinId: skinId,
-      price: req.body.price,
-      WalletAddress: req.body.WalletAddress,
-      //req.body.price, // Corrected line
-    });
-    res.status(201).json(newSkinSeller);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server Error" });
-  }
-});
-
-//Skin buyed by someone so delete the data
-// Assuming "skinSeller" is the model for the first database
-
-app.delete("/:username/Buy/:id", async (req, res) => {
-  const { username, id } = req.params;
-
-  try {
-    // Find and delete the skin with the given username and ID
-    const deletedSkin = await skinSeller.findOneAndDelete({
-      userName: username,
-      skinId: id,
-    });
-
-    if (!deletedSkin) {
-      // If skin is not found, return 404 Not Found
-      return res.status(404).json({ message: "Skin not found" });
-    }
-
-    // Return the deleted skin as JSON response
-    res.status(200).json(deletedSkin);
-  } catch (error) {
-    // If an error occurs, return an error response
-    res.status(500).json({ message: error.message });
-  }
-});
-
-//***********************************************************************2nd database */
-//***********************************************************************2nd database *///***********************************************************************2nd database */
-
-const OwnedSkin = require("./model/OwnedSkins.js");
-
-//2nd Database - Owned Skins
-app.get("/:username/Skin", async (req, res) => {
+// Route to get all skins owned by a specific username
+app.get("/:username", async (req, res) => {
+  //function to get user skins
   const { username } = req.params;
 
   try {
     // Find all the skins owned by the specified username
     const ownedSkins = await OwnedSkin.find({ userName: username });
-
     // Return the owned skins as JSON response
-    res.json(ownedSkins);
+
+    res.json(ownedSkins[0].skinId);
   } catch (error) {
     // If an error occurs, return an error response
     res.status(500).json({ message: error.message });
   }
 });
 
-// Route to add a new skin owned by a specific username
-app.post("/:username/Skin", async (req, res) => {
-  const { username } = req.params;
-  const skinId = req.body;
+//remove specific skin
+app.put("/:username/SkinRemove/:id", async (req, res) => {
+  //delete karney ke liye hai
+  const { username, id } = req.params;
 
   try {
-    // Create a new OwnedSkin document with the provided username and skinId
-    const newOwnedSkin = await OwnedSkin.create({
-      userName: username,
-      skinId: skinId,
-    });
-
-    // Save the newOwnedSkin document to the database
-    const savedOwnedSkin = await newOwnedSkin.save();
-
-    // Return the savedOwnedSkin as JSON response
-    res.status(201).json(savedOwnedSkin);
+    // Find the user by username
+    const userSkin = await OwnedSkin.findOneAndUpdate(
+      { userName: username },
+      { $pull: { skinId: parseInt(id) } }, // Remove the specified ID from the array
+      { new: true } // Return the updated document
+    );
+    if (!userSkin) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(userSkin);
   } catch (error) {
-    // If an error occurs, return an error response
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 
 // Route to add a new skin owned by a specific username (using PUT request)
-app.put("/:username/Skin", async (req, res) => {
+app.put("/:username/SkinAdd", async (req, res) => {
+  //jo bi array ayega wo bass add hoga remove khcuch  bi nhai hoga
   const { username } = req.params;
   const { skinIds } = req.body;
 
@@ -167,24 +100,25 @@ app.put("/:username/Skin", async (req, res) => {
   }
 });
 
-//remove specific skin
-app.put("/:username/Skin/:id", async (req, res) => {
-  const { username, id } = req.params;
+app.post("/:username/Skin", async (req, res) => {
+  const { username } = req.params;
+  const skinId = req.body;
 
   try {
-    // Find the user by username
-    const userSkin = await OwnedSkin.findOneAndUpdate(
-      { userName: username },
-      { $pull: { skinId: parseInt(id) } }, // Remove the specified ID from the array
-      { new: true } // Return the updated document
-    );
+    // Create a new OwnedSkin document with the provided username and skinId
+    const newOwnedSkin = await OwnedSkin.create({
+      userName: username,
+      skinId: skinId,
+    });
 
-    if (!userSkin) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.status(200).json(userSkin);
+    // Save the newOwnedSkin document to the database
+    const savedOwnedSkin = await newOwnedSkin.save();
+
+    // Return the savedOwnedSkin as JSON response
+    res.status(201).json(savedOwnedSkin);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // If an error occurs, return an error response
+    res.status(400).json({ message: error.message });
   }
 });
 

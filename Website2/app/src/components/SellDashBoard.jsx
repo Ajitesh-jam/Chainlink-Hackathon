@@ -7,7 +7,8 @@ import id0 from "./assets/Bacchi.png";
 import id1 from "./assets/woman.png";
 import id2 from "./assets/Woman-cloth.png";
 import id3 from "./assets/Woman-skirt.png";
-import skinOwnershipABI from './abis/skinOwnership.json';
+import skinOwnershipABI from "./abis/skinOwnership.json";
+import axios from 'axios';
 
 // Map skinId to corresponding image import
 const skinImages = {
@@ -48,6 +49,14 @@ function SellDash() {
     } catch (error) {
       console.error("Error fetching user skins:", error);
     }
+
+    // //when api done
+    // const url = `http://localhost:5001/${userName}`;
+    // const res = await axios.get(url);
+    // const data = res.data;
+    // console.log(data);
+    // setUserSkins(data);    
+
   }
 
   function sellSkin(skinId) {

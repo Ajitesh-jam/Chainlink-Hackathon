@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import Web3 from 'web3';
 import id0 from "./assets/Bacchi.png";
 import id1 from "./assets/woman.png";
@@ -7,6 +8,7 @@ import id3 from "./assets/Woman-skirt.png";
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import skinMarketABI from './abis/skinMarket.json';
+import { useNavigate } from 'react-router-dom';
 
 // Map skinId to corresponding image import
 const skinImages = {
@@ -31,16 +33,19 @@ function CardComponent({ skinId, username, price, buy }) {
 
 function BuyDash() {
   const [skins, setSkins] = useState([]);
-  let connectedAccount ;
+  let [connectedAccount, setConnectedAccount] = useState(null);
+  let seller;
   const skinMarketAdd = "0x0DedDe527e2B24a6c2B3bF5F3E7488517E37F3AD"; // Address from .env file
   const web3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545"); // Ganache
+  const {userName}=useParams();
+  const navigate = useNavigate();;
 
   useEffect(() => {
     connectWallet();
     ShowAllSkins();
   }, []);
 
-  async function connectWallet() {//function jissey wallet connect hojayega
+  async function connectWallet() {
     try {
       const accounts = await web3.eth.getAccounts();
       connectedAccount=accounts[0];
@@ -62,17 +67,21 @@ function BuyDash() {
         }));
       }));
 
-        //sellers will be kinda this type - 
-          //         [{…}]
-          // 0
-          // : 
-          // {0: 0n, 1: 'Devansh', 2: '0xeE3bbfDC858F71d0Ab57f17F3585db1b4DA68574', 3: 100000n, 4: '0x511d5A0649630213E26c071b861c5cB1A8609346', __length__: 5, id: 0n, userName: 'Devansh', walletAddress: '0xeE3bbfDC858F71d0Ab57f17F3585db1b4DA68574', price: 100000n, …}
-          // length
-          // : 
-          // 1
-          // [[Prototype]]
-          // : 
-          // Array(0)
+      const gameSkins = await Promise.all(skinIds.map(async (skinId) => {
+        const price = await skinMarket.methods.getSkinPriceFromGame(skinId).call();
+        if (price > 0) {
+          return {
+            skinId,
+            seller: {
+              userName: 'Game',
+              price: price.toString(),
+            },
+          };
+        }
+        return null;
+      }));
+
+      const filteredGameSkins = gameSkins.filter(skin => skin !== null);
 
       const sellerCards = allSellers.flat().map(({ skinId, seller }, index) => (
         <CardComponent 
@@ -83,27 +92,45 @@ function BuyDash() {
           buy={() => BuySkin(skinId, seller.id)}
         />
       ));
-      setSkins(sellerCards);
+
+      const gameCards = filteredGameSkins.map(({ skinId, seller }, index) => (
+        <CardComponent
+          key={`game-${index}`}
+          skinId={skinId}
+          username={seller.userName}
+          price={web3.utils.fromWei(seller.price, 'ether')}
+          buy={() => BuySkinFromGame(skinId, seller.price)}
+        />
+      ));
+
+      setSkins([...sellerCards, ...gameCards]);
     } catch (error) {
-      console.error("Error fetching sellers:", error);
+      console.error("Error fetching skins:", error);
     }
   }
 
-  async function BuySkin(skinId, sellerId) {
+
+  async function BuySkin(skinId) {
+    navigate(`/${userName}/Buy/${skinId}`);
+  }
+
+
+  async function BuySkinFromGame(skinId, price) {
+    console.log("from ; ",connectedAccount,"\nSkin id : ",skinId,"\nUsrname : ",userName)
     const skinMarket = new web3.eth.Contract(skinMarketABI, skinMarketAdd);
-    const seller = await skinMarket.methods.getSeller(skinId, sellerId).call();
     try {
-      await skinMarket.methods.buySkin(seller.userName, skinId, sellerId).send({ 
-        from: connectedAccount, 
-        value: seller.price 
+      await skinMarket.methods.buyFromGame(skinId, userName).send({
+        from: connectedAccount,
+        value: price,
       });
-      alert("Skin purchased successfully!");
+      alert("Skin purchased successfully from game!");
       ShowAllSkins();
     } catch (error) {
-      console.error("Error buying skin:", error);
-      alert("Error buying skin: " + error.message);
+      console.error("Error buying skin from game:", error);
+      alert("Error buying skin from game: " + error.message);
     }
   }
+  
 
   function shortAddress(address, startLength = 6, endLength = 4) {
     return `${address.slice(0, startLength)}...${address.slice(-endLength)}`;
@@ -127,4 +154,3 @@ function BuyDash() {
 }
 
 export default BuyDash;
-
