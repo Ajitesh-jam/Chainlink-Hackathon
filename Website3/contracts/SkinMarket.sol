@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {Chainlink, ChainlinkClient} from "@chainlink/contracts@1.1.1/src/v0.8/ChainlinkClient.sol";
+import {ConfirmedOwner} from "@chainlink/contracts@1.1.1/src/v0.8/shared/access/ConfirmedOwner.sol";
+import "github.com/Arachnid/solidity-stringutils/strings.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 interface ISkinOwnership {
     struct SkinOwner {
         string username;
@@ -29,8 +34,9 @@ interface ISkinOwnership {
     ) external returns (SkinOwner memory);
 }
 
-contract SkinMarket {
-    address payable public owner;
+contract SkinMarket is ChainlinkClient, ConfirmedOwner {
+    using strings for *;
+    address payable public contractOwner;
     address payable public game;
     ISkinOwnership public skinOwnership;
 
@@ -46,8 +52,10 @@ contract SkinMarket {
     mapping(uint256 => uint256) private gameSkinPrices;
     uint256[] public allSkins;
 
-    constructor(address _skinOwnershipAddress, address payable _game) {
-        owner = payable(msg.sender);
+
+    constructor(address _skinOwnershipAddress, address payable _game) ConfirmedOwner(msg.sender) {
+        _setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
+        contractOwner = payable(msg.sender);
         skinOwnership = ISkinOwnership(_skinOwnershipAddress);
         game = _game;
 
@@ -65,7 +73,7 @@ contract SkinMarket {
     }
 
     function AddOrEditSkin(uint256 _skinId, uint256 price) external {
-        require(msg.sender == owner, "Only owner can modify this");
+        require(msg.sender == contractOwner, "Only contractOwner can modify this");
         gameSkinPrices[_skinId] = price;
 
         bool skinExists = false;
@@ -125,7 +133,7 @@ contract SkinMarket {
         string memory userName,
         uint256 skinId,
         uint256 sellerId
-    ) public payable returns (bool) {
+    ) public payable {
         require(skinSellers[skinId].length > 0, "No sellers for this skin ID");
 
         SkinSeller memory seller = getSeller(skinId, sellerId);
@@ -137,7 +145,7 @@ contract SkinMarket {
         uint256 amountToOwner = (totalAmount * 1) / 100;
 
         seller.walletAddress.transfer(amountToSeller);
-        owner.transfer(amountToOwner);
+        contractOwner.transfer(amountToOwner);
         seller.gameCompany.transfer(amountToGameCompany);
 
         for (uint256 i = 0; i < skinSellers[skinId].length; i++) {
@@ -157,9 +165,18 @@ contract SkinMarket {
 
         skinOwnership.addSkinToUser(userName, skinId);
 
-        //implement API call to add the skin to the buyer -----> put("/:userName/SkinAdd")
+        //implement API call to add the skin to the buyer -----> type = BUY
+        Chainlink.Request memory req = _buildOperatorRequest(
+            stringToBytes32("5d99bfdca90141d1b8da9ad5edcef133"),
+            this.fulfillRequestSuccess.selector
+        );
+        string[] memory skinIds = new string[]();
+        skinIds[0] = Strings.toString(skinId);
 
-        return true;
+        req.add("username", userName);
+        req.add("type", "BUY");
+        req.addStringArray("skinIds", skinIds);
+        _sendOperatorRequestTo(_oracle, req, ORACLE_PAYMENT);
     }
 
     function sellSkin(
@@ -178,7 +195,19 @@ contract SkinMarket {
             }
         }
         if (!haveSkin) {
-            //implement API call to fetch if user have skin from the database ----> get("/:userName")
+            //implement API call to fetch if user have skin from the database ----> type = CHECK
+            Chainlink.Request memory req = _buildOperatorRequest(
+                stringToBytes32("5d99bfdca90141d1b8da9ad5edcef133"),
+                this.fulfillRequestSuccess.selector
+            );
+            
+            string[] memory skinIds = new string[]();
+            skinIds[0] = Strings.toString(skinId);
+
+            req.add("username", userName);
+            req.add("type", "CHECK");
+            req.addStringArray("skinIds", skinIds);
+            _sendOperatorRequestTo(_oracle, req, ORACLE_PAYMENT);
 
             //if(skinfound)
             haveSkin = true;
@@ -200,11 +229,76 @@ contract SkinMarket {
 
         skinSellers[skinId].push(newSeller);
 
-        //implement API call to update database to remove the skin from seller ----->put("/:userName/SkinRemove/:id")
+        //implement API call to update database to remove the skin from seller -----> type = SELL
+        Chainlink.Request memory req = _buildOperatorRequest(
+            stringToBytes32("5d99bfdca90141d1b8da9ad5edcef133"),
+            this.fulfillRequestInfo.selector
+        );
+        
+        string[] memory skinIds = new string[]();
+        skinIds[0] = Strings.toString(skinId);
+
+        req.add("username", userName);
+        req.add("type", "SELL");
+        req.addStringArray("skinIds", skinIds);
+        _sendOperatorRequestTo(_oracle, req, ORACLE_PAYMENT);
     }
 
     function getAllSkins() external view returns (uint256[] memory) {
         return allSkins;
+    }
+
+    function fulfillRequestCheck(bytes32 _requestId, string memory _result)
+        public
+        recordChainlinkFulfillment(_requestId)
+    {
+        // "2, 3, 4"
+        // var s = _result.toSlice();
+        // var delim = ", ".toSlice();
+        // var parts = new string[](s.count(delim) + 1);
+        // var skinIds = new uint[s.count(delim) + 1];
+        // for(uint i = 0; i < parts.length; i++) {
+        //     parts[i] = s.split(delim).toString();
+        //     skinIds[i] = stringToUint(parts[i]);
+        // }
+        // skinIds check
+        
+    }
+
+    function fulfillRequestSuccess(bytes32 _requestId, string memory _info)
+        public
+        recordChainlinkFulfillment(_requestId)
+    {
+        // emit RequestForInfoFulfilled(_requestId, _info);
+        // lastRetrievedInfo = _info;
+    }
+
+
+    function stringToBytes32(string memory source)
+        private
+        pure
+        returns (bytes32 result)
+    {
+        bytes memory tempEmptyStringTest = bytes(source);
+        if (tempEmptyStringTest.length == 0) {
+            return 0x0;
+        }
+
+        assembly {
+            // solhint-disable-line no-inline-assembly
+            result := mload(add(source, 32))
+        }
+    }
+
+    function stringToUint(string s) constant returns (uint) {
+        bytes memory b = bytes(s);
+        uint result = 0;
+        for (uint i = 0; i < b.length; i++) { // c = b[i] was not needed
+            if (b[i] >= 48 && b[i] <= 57) {
+                result = result * 10 + (uint(b[i]) - 48); // bytes and int are not compatible with the operator -.
+            }
+        }
+        return result; // this was missing
     }
 }
 
