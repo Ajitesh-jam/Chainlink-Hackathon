@@ -23,14 +23,24 @@ app.get("/", async (req, res) => {
 });
 //____________________________________________-______________________-______________________-______________________-______________________-______________________-
 
+app.post("/", async (req, res) => {
+	const input = req.body;
+	switch (input.data.type) {
+		case "BUY":
+			return await addSkin(input, res);
+		case "CHECK":
+			return await getSkins(input, res);
+		case "SELL":
+			return await removeSkin(input, res);
+	}
+});
 //Server and smart contract  will go hand in hand
 //contract me there is one mapping userName--> {userName, skinIds[]}
 //contract se data laney ki jaruat nhi as jab bhi buy sell karey hai apney app api call horey hai
 
 // Route to get all skins owned by a specific username
-app.post("/getSkins", async (req, res) => {
+const getSkins = async (input, res) => {
 	//function to get user skins
-	const input = req.body;
 	let output = {
 		jobRubId: input.id,
 		data: {},
@@ -52,10 +62,10 @@ app.post("/getSkins", async (req, res) => {
 
 		res.json(output);
 	}
-});
+};
 
 //remove specific skin
-app.post("/removeSkin", async (req, res) => {
+const removeSkin = async (input, res) => {
 	//delete karney ke liye hai
 	const input = req.body;
 	let output = {
@@ -86,12 +96,11 @@ app.post("/removeSkin", async (req, res) => {
 
 		res.json(output);
 	}
-});
+};
 
 // Route to add a new skin owned by a specific username (using PUT request)
-app.put("/addSkin", async (req, res) => {
+const addSkin = async (input, res) => {
 	//jo bi array ayega wo bass add hoga remove khcuch  bi nhai hoga
-	const input = req.body;
 	let output = {
 		jobRubId: input.id,
 		data: {},
@@ -100,6 +109,8 @@ app.put("/addSkin", async (req, res) => {
 
 	const username = input.data.username;
 	const skinIds = input.data.skinIds;
+	// ["1", "2"];
+	skinIds = skinIds.map((x) => parseInt(x));
 
 	if (!Array.isArray(skinIds)) {
 		output.error = "skinIds should be an array of numbers";
@@ -137,7 +148,7 @@ app.put("/addSkin", async (req, res) => {
 
 		res.json(output);
 	}
-});
+};
 
 app.post("/addSkinToUser", async (req, res) => {
 	const input = req.body;
