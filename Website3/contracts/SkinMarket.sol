@@ -52,8 +52,10 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
     mapping(uint256 => uint256) private gameSkinPrices;
     uint256[] public allSkins;
 
-
-    constructor(address _skinOwnershipAddress, address payable _game) ConfirmedOwner(msg.sender) {
+    constructor(
+        address _skinOwnershipAddress,
+        address payable _game
+    ) ConfirmedOwner(msg.sender) {
         _setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
         contractOwner = payable(msg.sender);
         skinOwnership = ISkinOwnership(_skinOwnershipAddress);
@@ -73,7 +75,10 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
     }
 
     function AddOrEditSkin(uint256 _skinId, uint256 price) external {
-        require(msg.sender == contractOwner, "Only contractOwner can modify this");
+        require(
+            msg.sender == contractOwner,
+            "Only contractOwner can modify this"
+        );
         gameSkinPrices[_skinId] = price;
 
         bool skinExists = false;
@@ -127,6 +132,58 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
             }
         }
         revert("Seller not found");
+    }
+
+    function isSkinIDPresent(
+        string memory s,
+        uint skinID
+    ) public pure returns (bool) {
+        // Convert uint to string
+        bytes memory skinIDBytes;
+        if (skinID == 0) {
+            skinIDBytes = "0";
+        } else {
+            uint temp = skinID;
+            uint len;
+            while (temp != 0) {
+                len++;
+                temp /= 10;
+            }
+            skinIDBytes = new bytes(len);
+            while (skinID != 0) {
+                len -= 1;
+                skinIDBytes[len] = bytes1(uint8(48 + (skinID % 10)));
+                skinID /= 10;
+            }
+        }
+
+        bytes memory b = bytes(s);
+        uint start = 0;
+
+        for (uint i = 0; i <= b.length; i++) {
+            if (i == b.length || b[i] == ",") {
+                if (
+                    keccak256(abi.encodePacked(substring(b, start, i))) ==
+                    keccak256(abi.encodePacked(skinIDBytes))
+                ) {
+                    return true;
+                }
+                start = i + 2; // Skip ", "
+            }
+        }
+        return false;
+    }
+
+    function substring(
+        bytes memory strBytes,
+        uint startIndex,
+        uint endIndex
+    ) internal pure returns (string memory) {
+        bytes memory result = new bytes(endIndex - startIndex);
+        for (uint i = startIndex; i < endIndex; i++) {
+            result[i - startIndex] = strBytes[i];
+        }
+        return string(result);
     }
 
     function buySkin(
@@ -200,7 +257,7 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
                 stringToBytes32("5d99bfdca90141d1b8da9ad5edcef133"),
                 this.fulfillRequestSuccess.selector
             );
-            
+
             string[] memory skinIds = new string[]();
             skinIds[0] = Strings.toString(skinId);
 
@@ -234,7 +291,7 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
             stringToBytes32("5d99bfdca90141d1b8da9ad5edcef133"),
             this.fulfillRequestInfo.selector
         );
-        
+
         string[] memory skinIds = new string[]();
         skinIds[0] = Strings.toString(skinId);
 
@@ -248,37 +305,26 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
         return allSkins;
     }
 
-    function fulfillRequestCheck(bytes32 _requestId, string memory _result)
-        public
-        recordChainlinkFulfillment(_requestId)
-    {
-        // "2, 3, 4"
-        // var s = _result.toSlice();
-        // var delim = ", ".toSlice();
-        // var parts = new string[](s.count(delim) + 1);
-        // var skinIds = new uint[s.count(delim) + 1];
-        // for(uint i = 0; i < parts.length; i++) {
-        //     parts[i] = s.split(delim).toString();
-        //     skinIds[i] = stringToUint(parts[i]);
-        // }
+    function fulfillRequestCheck(
+        bytes32 _requestId,
+        string memory _result
+    ) public recordChainlinkFulfillment(_requestId) {
+        //"2, 3, 4"
+        isSkinIDPresent(_result, skinId);
         // skinIds check
-        
     }
 
-    function fulfillRequestSuccess(bytes32 _requestId, string memory _info)
-        public
-        recordChainlinkFulfillment(_requestId)
-    {
+    function fulfillRequestSuccess(
+        bytes32 _requestId,
+        string memory _info
+    ) public recordChainlinkFulfillment(_requestId) {
         // emit RequestForInfoFulfilled(_requestId, _info);
         // lastRetrievedInfo = _info;
     }
 
-
-    function stringToBytes32(string memory source)
-        private
-        pure
-        returns (bytes32 result)
-    {
+    function stringToBytes32(
+        string memory source
+    ) private pure returns (bytes32 result) {
         bytes memory tempEmptyStringTest = bytes(source);
         if (tempEmptyStringTest.length == 0) {
             return 0x0;
@@ -290,15 +336,16 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
         }
     }
 
-    function stringToUint(string s) constant returns (uint) {
+    function stringToUint(string memory s) public pure returns (uint) {
         bytes memory b = bytes(s);
         uint result = 0;
-        for (uint i = 0; i < b.length; i++) { // c = b[i] was not needed
-            if (b[i] >= 48 && b[i] <= 57) {
-                result = result * 10 + (uint(b[i]) - 48); // bytes and int are not compatible with the operator -.
+        for (uint i = 0; i < b.length; i++) {
+            if (b[i] >= 0x30 && b[i] <= 0x39) {
+                // ASCII values for '0' to '9'
+                result = result * 10 + (uint(uint8(b[i])) - 0x30);
             }
         }
-        return result; // this was missing
+        return result;
     }
 }
 
