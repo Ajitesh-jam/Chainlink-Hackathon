@@ -9,6 +9,7 @@ import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import skinMarketABI from './abis/skinMarket.json';
 import { useNavigate } from 'react-router-dom';
+require("dotenv").config();
 
 // Map skinId to corresponding image import
 const skinImages = {
@@ -35,7 +36,7 @@ function BuyDash() {
   const [skins, setSkins] = useState([]);
   let [connectedAccount, setConnectedAccount] = useState(null);
   let seller;
-  const skinMarketAdd = "0x0DedDe527e2B24a6c2B3bF5F3E7488517E37F3AD"; // Address from .env file
+  const skinMarketAdd = process.env.SKIN_MARKET_ADD; // Address from .env file
   const web3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545"); // Ganache
   const {userName}=useParams();
   const navigate = useNavigate();;
