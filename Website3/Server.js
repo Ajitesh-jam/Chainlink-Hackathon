@@ -8,16 +8,19 @@ app.use(express.json()); // Middleware to parse JSON bodies
 
 // MongoDB Connection
 mongoose
-  .connect(
-    "mongodb+srv://Ajitesh:Ajitesh9877@cluster0.yz6u5fv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-  )
-  .then(() => {
-    console.log("MongoDB Connected");
-  })
-  .catch((err) => {
-    console.error("MongoDB Connection Error:", err);
-  });
+	.connect(
+		"mongodb+srv://Ajitesh:Ajitesh9877@cluster0.yz6u5fv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+	)
+	.then(() => {
+		console.log("MongoDB Connected");
+	})
+	.catch((err) => {
+		console.error("MongoDB Connection Error:", err);
+	});
 
+app.get("/", async (req, res) => {
+	res.status(200).send("Hello from Server");
+});
 //____________________________________________-______________________-______________________-______________________-______________________-______________________-
 
 //Server and smart contract  will go hand in hand
@@ -25,105 +28,150 @@ mongoose
 //contract se data laney ki jaruat nhi as jab bhi buy sell karey hai apney app api call horey hai
 
 // Route to get all skins owned by a specific username
-app.get("/:username", async (req, res) => {
-  //function to get user skins
-  const { username } = req.params;
+app.post("/getSkins", async (req, res) => {
+	//function to get user skins
+	const input = req.body;
+	let output = {
+		jobRubId: input.id,
+		data: {},
+		statusCode: 0,
+	};
+	try {
+		// Find all the skins owned by the specified username
+		const ownedSkins = await OwnedSkin.find({
+			userName: input.data.username,
+		});
+		// Return the owned skins as JSON response
+		output.data = { result: ownedSkins[0].skinId.toString() };
+		output.statusCode = 200;
+		res.json(output);
+	} catch (error) {
+		// If an error occurs, return an error response
+		output.error = error.message;
+		output.statusCode = 402;
 
-  try {
-    // Find all the skins owned by the specified username
-    const ownedSkins = await OwnedSkin.find({ userName: username });
-    // Return the owned skins as JSON response
-
-    res.json(ownedSkins[0].skinId);
-  } catch (error) {
-    // If an error occurs, return an error response
-    res.status(500).json({ message: error.message });
-  }
+		res.json(output);
+	}
 });
 
 //remove specific skin
-app.put("/:username/SkinRemove/:id", async (req, res) => {
-  //delete karney ke liye hai
-  const { username, id } = req.params;
+app.post("/removeSkin", async (req, res) => {
+	//delete karney ke liye hai
+	const input = req.body;
+	let output = {
+		jobRubId: input.id,
+		data: {},
+		statusCode: 0,
+	};
 
-  try {
-    // Find the user by username
-    const userSkin = await OwnedSkin.findOneAndUpdate(
-      { userName: username },
-      { $pull: { skinId: parseInt(id) } }, // Remove the specified ID from the array
-      { new: true } // Return the updated document
-    );
-    if (!userSkin) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.status(200).json(userSkin);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+	try {
+		// Find the user by username
+		const userSkin = await OwnedSkin.findOneAndUpdate(
+			{ userName: input.data.username },
+			{ $pull: { skinId: parseInt(input.data.id) } }, // Remove the specified ID from the array
+			{ new: true } // Return the updated document
+		);
+		if (!userSkin) {
+			output.error = "User not found";
+			output.statusCode = 404;
+
+			return res.json(output);
+		}
+		output.data = { result: "Success" };
+		output.statusCode = 200;
+		res.json(output);
+	} catch (error) {
+		output.error = error.message;
+		output.statusCode = 402;
+
+		res.json(output);
+	}
 });
 
 // Route to add a new skin owned by a specific username (using PUT request)
-app.put("/:username/SkinAdd", async (req, res) => {
-  //jo bi array ayega wo bass add hoga remove khcuch  bi nhai hoga
-  const { username } = req.params;
-  const { skinIds } = req.body;
+app.put("/addSkin", async (req, res) => {
+	//jo bi array ayega wo bass add hoga remove khcuch  bi nhai hoga
+	const input = req.body;
+	let output = {
+		jobRubId: input.id,
+		data: {},
+		statusCode: 0,
+	};
 
-  if (!Array.isArray(skinIds)) {
-    return res
-      .status(400)
-      .json({ message: "skinIds should be an array of numbers" });
-  }
+	const username = input.data.username;
+	const skinIds = input.data.skinIds;
 
-  try {
-    // Find the user by username
-    let userSkin = await OwnedSkin.findOne({ userName: username });
+	if (!Array.isArray(skinIds)) {
+		output.error = "skinIds should be an array of numbers";
+		output.statusCode = 404;
 
-    if (userSkin) {
-      // If user exists, add new skin IDs to the array, avoiding duplicates
-      userSkin.skinId = [...new Set([...userSkin.skinId, ...skinIds])];
-    } else {
-      // If user does not exist, create a new document
-      userSkin = new OwnedSkin({
-        userName: username,
-        skinId: skinIds,
-      });
-    }
+		return res.json(output);
+	}
 
-    // Save the document
-    const savedUserSkin = await userSkin.save();
+	try {
+		// Find the user by username
+		let userSkin = await OwnedSkin.findOne({ userName: username });
 
-    // Return the updated document as JSON response
-    res.status(200).json(savedUserSkin);
-  } catch (error) {
-    // If an error occurs, return an error response
-    res.status(500).json({ message: error.message });
-  }
+		if (userSkin) {
+			// If user exists, add new skin IDs to the array, avoiding duplicates
+			userSkin.skinId = [...new Set([...userSkin.skinId, ...skinIds])];
+		} else {
+			// If user does not exist, create a new document
+			userSkin = new OwnedSkin({
+				userName: username,
+				skinId: skinIds,
+			});
+		}
+
+		// Save the document
+		await userSkin.save();
+
+		// Return the updated document as JSON response
+		output.data = { result: "Success" };
+		output.statusCode = 200;
+		res.json(output);
+	} catch (error) {
+		// If an error occurs, return an error response
+		output.error = error.message;
+		output.statusCode = 402;
+
+		res.json(output);
+	}
 });
 
-app.post("/:username/Skin", async (req, res) => {
-  const { username } = req.params;
-  const skinId = req.body;
+app.post("/addSkinToUser", async (req, res) => {
+	const input = req.body;
+	let output = {
+		jobRubId: input.id,
+		data: {},
+		statusCode: 0,
+	};
 
-  try {
-    // Create a new OwnedSkin document with the provided username and skinId
-    const newOwnedSkin = await OwnedSkin.create({
-      userName: username,
-      skinId: skinId,
-    });
+	try {
+		// Create a new OwnedSkin document with the provided username and skinId
+		const newOwnedSkin = await OwnedSkin.create({
+			userName: input.data.username,
+			skinId: input.data.skinId,
+		});
 
-    // Save the newOwnedSkin document to the database
-    const savedOwnedSkin = await newOwnedSkin.save();
+		// Save the newOwnedSkin document to the database
+		await newOwnedSkin.save();
 
-    // Return the savedOwnedSkin as JSON response
-    res.status(201).json(savedOwnedSkin);
-  } catch (error) {
-    // If an error occurs, return an error response
-    res.status(400).json({ message: error.message });
-  }
+		// Return the savedOwnedSkin as JSON response
+		output.data = { result: "Success" };
+		output.statusCode = 200;
+		res.json(output);
+	} catch (error) {
+		// If an error occurs, return an error response
+		output.error = error.message;
+		output.statusCode = 402;
+
+		res.json(output);
+	}
 });
 
 // Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+	console.log(`Server is running on port ${PORT}`);
 });
