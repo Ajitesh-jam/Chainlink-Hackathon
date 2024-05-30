@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
-import {Chainlink, ChainlinkClient} from "@chainlink/contracts@1.1.1/src/v0.8/ChainlinkClient.sol";
-import {ConfirmedOwner} from "@chainlink/contracts@1.1.1/src/v0.8/shared/access/ConfirmedOwner.sol";
-import "github.com/Arachnid/solidity-stringutils/strings.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+// Chainlink imports
+import '@chainlink/contracts/src/v0.8/ChainlinkClient.sol';
+import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
+
+// solidity-stringutils import
+import "https://github.com/Arachnid/solidity-stringutils/blob/master/src/strings.sol";
+
+// OpenZeppelin import
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Strings.sol";
+
 
 interface ISkinOwnership {
     struct SkinOwner {
@@ -36,6 +42,10 @@ interface ISkinOwnership {
 
 contract SkinMarket is ChainlinkClient, ConfirmedOwner {
     using strings for *;
+    using Chainlink for Chainlink.Request;
+    uint256 private constant ORACLE_PAYMENT = 1 * LINK_DIVISIBILITY;
+    
+    address public oracle;
     address payable public contractOwner;
     address payable public game;
     ISkinOwnership public skinOwnership;
@@ -52,14 +62,13 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
     mapping(uint256 => uint256) private gameSkinPrices;
     uint256[] public allSkins;
 
-    constructor(
-        address _skinOwnershipAddress,
-        address payable _game
-    ) ConfirmedOwner(msg.sender) {
+
+    constructor(address _skinOwnershipAddress, address payable _game, address _oracle) ConfirmedOwner(msg.sender) {
         _setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
         contractOwner = payable(msg.sender);
         skinOwnership = ISkinOwnership(_skinOwnershipAddress);
         game = _game;
+        oracle = _oracle;
 
         // Initial data -all skins costs 1 eth in game
         uint256 initialPrice = 1 ether;
@@ -75,10 +84,7 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
     }
 
     function AddOrEditSkin(uint256 _skinId, uint256 price) external {
-        require(
-            msg.sender == contractOwner,
-            "Only contractOwner can modify this"
-        );
+        require(msg.sender == contractOwner, "Only contractOwner can modify this");
         gameSkinPrices[_skinId] = price;
 
         bool skinExists = false;
@@ -134,58 +140,6 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
         revert("Seller not found");
     }
 
-    function isSkinIDPresent(
-        string memory s,
-        uint skinID
-    ) public pure returns (bool) {
-        // Convert uint to string
-        bytes memory skinIDBytes;
-        if (skinID == 0) {
-            skinIDBytes = "0";
-        } else {
-            uint temp = skinID;
-            uint len;
-            while (temp != 0) {
-                len++;
-                temp /= 10;
-            }
-            skinIDBytes = new bytes(len);
-            while (skinID != 0) {
-                len -= 1;
-                skinIDBytes[len] = bytes1(uint8(48 + (skinID % 10)));
-                skinID /= 10;
-            }
-        }
-
-        bytes memory b = bytes(s);
-        uint start = 0;
-
-        for (uint i = 0; i <= b.length; i++) {
-            if (i == b.length || b[i] == ",") {
-                if (
-                    keccak256(abi.encodePacked(substring(b, start, i))) ==
-                    keccak256(abi.encodePacked(skinIDBytes))
-                ) {
-                    return true;
-                }
-                start = i + 2; // Skip ", "
-            }
-        }
-        return false;
-    }
-
-    function substring(
-        bytes memory strBytes,
-        uint startIndex,
-        uint endIndex
-    ) internal pure returns (string memory) {
-        bytes memory result = new bytes(endIndex - startIndex);
-        for (uint i = startIndex; i < endIndex; i++) {
-            result[i - startIndex] = strBytes[i];
-        }
-        return string(result);
-    }
-
     function buySkin(
         string memory userName,
         uint256 skinId,
@@ -227,13 +181,14 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
             stringToBytes32("5d99bfdca90141d1b8da9ad5edcef133"),
             this.fulfillRequestSuccess.selector
         );
-        string[] memory skinIds = new string[]();
+        string[] memory skinIds = new string[](1);
         skinIds[0] = Strings.toString(skinId);
 
-        req.add("username", userName);
-        req.add("type", "BUY");
-        req.addStringArray("skinIds", skinIds);
-        _sendOperatorRequestTo(_oracle, req, ORACLE_PAYMENT);
+        Chainlink._add(req, "username", userName);
+        Chainlink._add(req, "type", "BUY");
+        Chainlink._addStringArray(req, "skinIds", skinIds);
+
+        _sendOperatorRequestTo(oracle, req, ORACLE_PAYMENT);
     }
 
     function sellSkin(
@@ -255,20 +210,18 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
             //implement API call to fetch if user have skin from the database ----> type = CHECK
             Chainlink.Request memory req = _buildOperatorRequest(
                 stringToBytes32("5d99bfdca90141d1b8da9ad5edcef133"),
-                this.fulfillRequestSuccess.selector
+                this.fulfillRequestCheck.selector
             );
-
-            string[] memory skinIds = new string[]();
+            
+            string[] memory skinIds = new string[](1);
             skinIds[0] = Strings.toString(skinId);
 
-            req.add("username", userName);
-            req.add("type", "CHECK");
-            req.addStringArray("skinIds", skinIds);
-            _sendOperatorRequestTo(_oracle, req, ORACLE_PAYMENT);
+            Chainlink._add(req, "username", _userName);
+            Chainlink._add(req, "type", "CHECK");
+            Chainlink._addStringArray(req, "skinIds", skinIds);
+            _sendOperatorRequestTo(oracle, req, ORACLE_PAYMENT);
 
-            //if(skinfound)
-            haveSkin = true;
-            //else return
+            return;
         } else {
             //if skin have from contract then remove it from skinOwnership
             skinOwnership.removeSkinFromUser(_userName, skinId);
@@ -289,42 +242,53 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
         //implement API call to update database to remove the skin from seller -----> type = SELL
         Chainlink.Request memory req = _buildOperatorRequest(
             stringToBytes32("5d99bfdca90141d1b8da9ad5edcef133"),
-            this.fulfillRequestInfo.selector
+            this.fulfillRequestSuccess.selector
         );
-
-        string[] memory skinIds = new string[]();
+        
+        string[] memory skinIds = new string[](1);
         skinIds[0] = Strings.toString(skinId);
 
-        req.add("username", userName);
-        req.add("type", "SELL");
-        req.addStringArray("skinIds", skinIds);
-        _sendOperatorRequestTo(_oracle, req, ORACLE_PAYMENT);
+        Chainlink._add(req, "username", _userName);
+        Chainlink._add(req, "type", "SELL");
+        Chainlink._addStringArray(req,"skinIds", skinIds);
+        _sendOperatorRequestTo(oracle, req, ORACLE_PAYMENT);
     }
 
     function getAllSkins() external view returns (uint256[] memory) {
         return allSkins;
     }
 
-    function fulfillRequestCheck(
-        bytes32 _requestId,
-        string memory _result
-    ) public recordChainlinkFulfillment(_requestId) {
-        //"2, 3, 4"
-        isSkinIDPresent(_result, skinId);
+    function fulfillRequestCheck(bytes32 _requestId, string memory _result)
+        public
+        recordChainlinkFulfillment(_requestId)
+    {
+        // "2, 3, 4"
+        strings.slice memory s = _result.toSlice();
+        strings.slice memory delim = ", ".toSlice();
+        string[] memory parts = new string[](s.count(delim) + 1);
+        uint[] memory skinIds = new uint[](s.count(delim) + 1);
+        for(uint i = 0; i < parts.length; i++) {
+            parts[i] = s.split(delim).toString();
+            skinIds[i] = stringToUint(parts[i]);
+        }
         // skinIds check
+        
     }
 
-    function fulfillRequestSuccess(
-        bytes32 _requestId,
-        string memory _info
-    ) public recordChainlinkFulfillment(_requestId) {
+    function fulfillRequestSuccess(bytes32 _requestId, string memory _info)
+        public
+        recordChainlinkFulfillment(_requestId)
+    {
         // emit RequestForInfoFulfilled(_requestId, _info);
         // lastRetrievedInfo = _info;
     }
 
-    function stringToBytes32(
-        string memory source
-    ) private pure returns (bytes32 result) {
+
+    function stringToBytes32(string memory source)
+        private
+        pure
+        returns (bytes32 result)
+    {
         bytes memory tempEmptyStringTest = bytes(source);
         if (tempEmptyStringTest.length == 0) {
             return 0x0;
@@ -339,10 +303,10 @@ contract SkinMarket is ChainlinkClient, ConfirmedOwner {
     function stringToUint(string memory s) public pure returns (uint) {
         bytes memory b = bytes(s);
         uint result = 0;
-        for (uint i = 0; i < b.length; i++) {
-            if (b[i] >= 0x30 && b[i] <= 0x39) {
-                // ASCII values for '0' to '9'
-                result = result * 10 + (uint(uint8(b[i])) - 0x30);
+        for (uint256 i = 0; i < b.length; i++) {
+            uint256 c = uint256(uint8(b[i]));
+            if (c >= 48 && c <= 57) {
+                result = result * 10 + (c - 48);
             }
         }
         return result;
