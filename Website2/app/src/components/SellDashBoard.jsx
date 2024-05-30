@@ -34,7 +34,7 @@ function SellDash() {
   const { userName } = useParams();
   const [userSkins, setUserSkins] = useState([]);
   const navigate = useNavigate();
-  const skinOwnershipAddress = "0x87931844BaCC9A19A7f43d0Bf02f616c2d73fA9A"; // Address from .env file
+  const skinOwnershipAddress = "0x24c78C2d20D276faE45108FCc8d6C64befcF1265"; // Address from .env file
   const web3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545"); // Ganache
 
   useEffect(() => {

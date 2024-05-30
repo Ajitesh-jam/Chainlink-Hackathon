@@ -213,7 +213,7 @@ function BuySkinPage() {
   let connectedAccount;
   let sellers ;
   let seller;
-  const skinMarketAdd = "0x0DedDe527e2B24a6c2B3bF5F3E7488517E37F3AD"; // Ganache address
+  const skinMarketAdd = "0x878bb6B4D8EAA1E00F383fA711E7b78dBe992DF7"; // Ganache address
   const web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:7545")); // Ganache
   const { userName, skinId } = useParams();
 

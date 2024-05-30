@@ -24,7 +24,7 @@ function SellSkinPage() {
   const [averagePrice, setAveragePrice] = useState(0);
   const [price, setPrice] = useState('');
   const navigate = useNavigate();
-  const skinMarketAddress = "0x0DedDe527e2B24a6c2B3bF5F3E7488517E37F3AD"; // Address from .env file
+  const skinMarketAddress = "0x878bb6B4D8EAA1E00F383fA711E7b78dBe992DF7"; // Address from .env file
   const web3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545"); // Ganache
 
   useEffect(() => {
